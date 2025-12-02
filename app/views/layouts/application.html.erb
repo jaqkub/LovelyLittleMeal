@@ -9,8 +9,16 @@
     <%= javascript_importmap_tags %>
   </head>
   <body>
+      <%= link_to "Skip to main content", "#main-content", class: "visually-hidden-focusable" %>
+    <header>
+      <%= render "shared/navbar" %>
+    </header>
+
+    <main id="main-content">
     <%= yield %>
     <p class="notice"><%= notice %></p>
     <p class="alert"><%= alert %></p>
+
+    </main>
   </body>
 </html>
