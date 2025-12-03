@@ -1,160 +1,184 @@
 import { Controller } from "@hotwired/stimulus"
 
 // Auto-scrolls chat messages container to bottom when new messages are added
-// Shows/hides loading indicator during message processing
+// Hides empty message when user sends first message
 // Uses MutationObserver to detect when new content is appended via Turbo Stream
 export default class extends Controller {
-  static targets = ["loading", "messages"]
+  static targets = ["messages", "form", "input", "submit"]
 
   connect() {
     // Scroll to bottom on initial load
     this.scrollToBottom()
     
-    // Flag to prevent scroll operations during loading indicator changes
-    this.isShowingLoading = false
-    
-    // Store bound functions for proper cleanup
-    this.boundShowLoading = this.showLoading.bind(this)
-    this.boundHideLoading = this.hideLoading.bind(this)
-    
-    // Use event delegation for form submission - works even when form is replaced
-    // Listen on the controller element so it persists across form replacements
-    this.element.addEventListener("turbo:submit-start", this.boundShowLoading)
-    this.element.addEventListener("turbo:submit-end", this.boundHideLoading)
+    // Set up input validation for send button
+    this.setupInputValidation()
     
     // Set up MutationObserver to watch for new child elements (new messages)
-    this.observer = new MutationObserver((mutations) => {
-      // Skip scroll operations if we're in the middle of showing loading
-      if (this.isShowingLoading) return
-      
-      // Check if new messages were added (not just the loading indicator or empty message removal)
-      const hasNewMessages = mutations.some(mutation => 
-        Array.from(mutation.addedNodes).some(node => {
-          if (node.nodeType !== 1) return false
-          // Ignore loading indicator and empty message
-          if (node.id?.includes('chat-loading') || node.id?.includes('empty-chat-message')) return false
-          // Check if it's a message bubble (has message-bubble class)
-          return node.classList?.contains('message-bubble') || 
-                 node.querySelector?.('.message-bubble') !== null
-        })
-      )
-      
-      if (hasNewMessages) {
-        // Hide loading indicator when new messages arrive
-        this.hideLoading()
-        // Scroll to bottom after a brief delay to ensure DOM is fully updated
-        setTimeout(() => {
+    // Only auto-scroll if user is already at the bottom (hasn't scrolled up)
+    this.messagesObserver = new MutationObserver(() => {
+      // Only scroll to bottom if user is already near the bottom
+      // This allows users to scroll up to read older messages without interruption
+      if (this.isNearBottom()) {
+        requestAnimationFrame(() => {
           this.scrollToBottom()
-        }, 50)
+        })
       }
-      // Don't scroll for other mutations (like loading indicator changes)
     })
     
     // Observe changes to child elements (when messages are added)
-    // Watch the messages container, not the entire controller element
     if (this.hasMessagesTarget) {
-      this.observer.observe(this.messagesTarget, {
+      this.messagesObserver.observe(this.messagesTarget, {
         childList: true,
         subtree: true
       })
     }
+    
+    // Set up observer for form changes (when form is replaced via turbo_stream)
+    if (this.hasFormTarget) {
+      this.formObserver = new MutationObserver(() => {
+        // Re-setup input validation when form is replaced
+        requestAnimationFrame(() => {
+          this.setupInputValidation()
+        })
+      })
+      
+      this.formObserver.observe(this.formTarget, {
+        childList: true,
+        subtree: true
+      })
+    }
+    
+    // Handle form submission - show optimistic updates immediately
+    this.element.addEventListener("turbo:submit-start", (event) => {
+      this.handleFormSubmit(event)
+    })
   }
 
   disconnect() {
-    // Clean up observer when controller is disconnected
-    if (this.observer) {
-      this.observer.disconnect()
+    // Clean up observers when controller is disconnected
+    if (this.messagesObserver) {
+      this.messagesObserver.disconnect()
     }
-    // Remove event listeners using stored bound functions
-    if (this.boundShowLoading) {
-      this.element.removeEventListener("turbo:submit-start", this.boundShowLoading)
-    }
-    if (this.boundHideLoading) {
-      this.element.removeEventListener("turbo:submit-end", this.boundHideLoading)
+    if (this.formObserver) {
+      this.formObserver.disconnect()
     }
   }
 
-  showLoading() {
-    // Show loading indicator when form is submitted
-    if (this.hasLoadingTarget && this.hasMessagesTarget) {
-      // Set flag to prevent MutationObserver from interfering
-      this.isShowingLoading = true
+  setupInputValidation() {
+    // Enable/disable send button based on input content
+    // Stimulus automatically reconnects targets when form is replaced via turbo_stream
+    if (this.hasInputTarget && this.hasSubmitTarget) {
+      // Update button state immediately
+      this.updateSubmitButton()
       
-      // Store exact scroll position BEFORE any DOM changes
-      const container = this.messagesTarget
-      const scrollTop = container.scrollTop
-      const wasAtBottom = this.isAtBottom()
-      
-      // Temporarily disable scroll restoration to prevent jumps
-      const originalScrollRestoration = container.style.scrollBehavior
-      container.style.scrollBehavior = 'auto'
-      
-      // Show loading indicator - use visibility instead of display to avoid layout shift
-      this.loadingTarget.style.visibility = 'visible'
-      this.loadingTarget.style.opacity = '0'
-      this.loadingTarget.classList.remove("d-none")
-      
-      // Force a reflow
-      void container.offsetHeight
-      
-      // Immediately restore scroll position multiple times to prevent any jumps
-      container.scrollTop = scrollTop
-      requestAnimationFrame(() => {
-        container.scrollTop = scrollTop
-        requestAnimationFrame(() => {
-          container.scrollTop = scrollTop
-          
-          // Fade in the loading indicator
-          this.loadingTarget.style.opacity = '1'
-          this.loadingTarget.style.transition = 'opacity 0.2s'
-          
-          // Restore scroll behavior
-          container.style.scrollBehavior = originalScrollRestoration
-          
-          // Only scroll to bottom if user was already at bottom
-          if (wasAtBottom) {
-            // Small delay to ensure loading indicator is visible, then scroll
-            setTimeout(() => {
-              this.isShowingLoading = false
-              this.scrollToBottom()
-            }, 150)
-          } else {
-            // Keep scroll position, just re-enable observer
-            setTimeout(() => {
-              this.isShowingLoading = false
-            }, 50)
-          }
-        })
-      })
+      // Add event listener for input changes
+      // Using a bound function stored on the controller to allow cleanup if needed
+      if (!this.boundUpdateSubmitButton) {
+        this.boundUpdateSubmitButton = () => this.updateSubmitButton()
+      }
+      this.inputTarget.addEventListener("input", this.boundUpdateSubmitButton)
     }
+  }
+
+  updateSubmitButton() {
+    // Disable submit button if input is empty
+    if (this.hasInputTarget && this.hasSubmitTarget) {
+      const hasContent = this.inputTarget.value.trim().length > 0
+      this.submitTarget.disabled = !hasContent
+    }
+  }
+
+  handleFormSubmit(event) {
+    // Hide empty message immediately
+    this.hideEmptyMessage()
+    
+    // Get form and input values
+    const form = event.target.closest('form')
+    if (!form || !this.hasMessagesTarget) return
+    
+    const input = form.querySelector('input[type="text"], input[name="content"]')
+    if (!input || !input.value.trim()) return
+    
+    const userMessageContent = input.value.trim()
+    
+    // Store the message content to prevent duplicates
+    // Mark that we've added optimistic updates for this submission
+    this.optimisticUpdateInProgress = true
+    
+    // Create optimistic user message with a temporary ID that can be replaced
+    const tempId = `user-msg-${Date.now()}`
+    const userMessageHtml = `
+      <div id="optimistic-user-msg" class="d-flex mb-3 message-item justify-content-end" data-optimistic-user-msg="${tempId}">
+        <div class="message-bubble user-message">
+          ${this.escapeHtml(userMessageContent).replace(/\n/g, '<br>')}
+        </div>
+      </div>
+    `
+    
+    // Create loading bubble
+    const loadingHtml = `
+      <div id="loading" class="d-flex mb-3 justify-content-start">
+        <div class="message-bubble assistant-message d-flex align-items-center gap-2">
+          <div class="spinner-border spinner-border-sm text-muted" role="status" style="width: 1rem; height: 1rem;">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <span class="text-muted mb-0">Thinking...</span>
+        </div>
+      </div>
+    `
+    
+    // Append both messages immediately
+    this.messagesTarget.insertAdjacentHTML('beforeend', userMessageHtml + loadingHtml)
+    
+    // Scroll to bottom
+    requestAnimationFrame(() => {
+      this.scrollToBottom()
+    })
+    
+    // Clear input immediately for better UX
+    input.value = ''
+    this.updateSubmitButton()
+    
+    // Reset flag after a delay (server response should come before this)
+    setTimeout(() => {
+      this.optimisticUpdateInProgress = false
+    }, 10000)
   }
   
-  isAtBottom() {
-    // Check if user is near the bottom of the chat (within 100px)
-    if (!this.hasMessagesTarget) return true
-    const container = this.messagesTarget
-    const threshold = 100
-    return (container.scrollHeight - container.scrollTop - container.clientHeight) < threshold
+  escapeHtml(text) {
+    const div = document.createElement('div')
+    div.textContent = text
+    return div.innerHTML
   }
 
-  hideLoading() {
-    // Hide loading indicator when response arrives
-    if (this.hasLoadingTarget) {
-      // Fade out then hide
-      this.loadingTarget.style.opacity = '0'
-      this.loadingTarget.style.transition = 'opacity 0.2s'
-      
+  hideEmptyMessage() {
+    // Hide empty message immediately when form is submitted
+    const emptyMessage = document.getElementById('empty-chat-message')
+    if (emptyMessage) {
+      emptyMessage.style.opacity = '0'
+      emptyMessage.style.transition = 'opacity 0.2s ease-out'
       setTimeout(() => {
-        this.loadingTarget.classList.add("d-none")
-        this.loadingTarget.style.visibility = ''
-        this.loadingTarget.style.opacity = ''
-        this.loadingTarget.style.transition = ''
+        if (emptyMessage.parentNode) {
+          emptyMessage.style.display = 'none'
+        }
       }, 200)
     }
   }
 
+  isNearBottom() {
+    // Check if user is near the bottom of the scroll container (within 100px)
+    // This allows auto-scroll when at bottom, but prevents interrupting manual scrolling
+    if (!this.hasMessagesTarget) return true
+    
+    const container = this.messagesTarget
+    const threshold = 100 // pixels from bottom
+    const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight
+    
+    return distanceFromBottom < threshold
+  }
+
   scrollToBottom() {
-    // Scroll to the bottom of the messages container smoothly
+    // Scroll to the bottom of the messages container to show newest messages
     if (this.hasMessagesTarget) {
       this.messagesTarget.scrollTop = this.messagesTarget.scrollHeight
     }

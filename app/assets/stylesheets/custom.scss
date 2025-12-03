@@ -3,6 +3,7 @@ html, body {
   height: 100%;
   margin: 0;
   padding: 0;
+  overflow: hidden; // Prevent body scroll
 }
 
 // Ensure main content area can use flexbox properly
@@ -17,6 +18,24 @@ html, body {
 }
 
 // Chat message bubbles styling
+.message-item {
+  // Animation for slide-up and fade-in
+  animation: slideUpFadeIn 0.3s ease-out;
+  opacity: 0;
+  animation-fill-mode: forwards;
+}
+
+@keyframes slideUpFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .message-bubble {
   max-width: 75%;
   padding: 0.75rem 1rem;
@@ -55,16 +74,94 @@ html, body {
   #message-content {
     height: auto;
     min-height: 38px; // Match Bootstrap button height
+    border-radius: 20px; // Rounded input
+    border: 1px solid #dee2e6;
+    padding: 0.5rem 1rem;
+    
+    &:focus {
+      border-color: #0d6efd;
+      box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    }
   }
   
   .btn {
     height: 38px; // Match input height
-    padding: 0.375rem 1rem;
+    padding: 0.375rem 1.5rem;
+    border-radius: 20px; // Rounded button
+  }
+}
+
+// Reusable rounded button style for app-wide use
+.btn-rounded {
+  border-radius: 20px !important;
+  padding: 0.375rem 1.5rem;
+}
+
+// Empty chat message - smooth fade out
+#empty-chat-message {
+  transition: opacity 0.2s ease-out, min-height 0.2s ease-out;
+  opacity: 1;
+  
+  &[style*="display: none"] {
+    display: none !important;
+  }
+}
+
+// Loading indicator - smooth fade in/out
+#chat-loading {
+  min-height: 40px; // Fixed height to prevent layout shifts
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0; // Start hidden, will fade in via JS
+  
+  &.d-none {
+    min-height: 0;
+    height: 0;
+    overflow: hidden;
+    padding: 0;
+    margin: 0;
+  }
+  
+  &:not(.d-none) {
+    opacity: 1;
+    transition: opacity 0.2s ease-in;
   }
 }
 
 // Recipe details styling
 #recipe-details {
+  // Ensure the container can scroll
+  overflow-y: auto;
+  overflow-x: hidden;
+  
+  // Custom scrollbar styling for Firefox
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e0 #f7fafc;
+  
+  // Custom scrollbar styling for Webkit browsers (Chrome, Safari, Edge)
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: #f7fafc;
+    border-radius: 4px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: #cbd5e0;
+    border-radius: 4px;
+    
+    &:hover {
+      background: #a0aec0;
+    }
+  }
+  
+  // Add padding to prevent content from being squashed by borders
+  padding-right: 0.5rem;
+  padding-left: 0.25rem;
+  
   h1 {
     font-size: 2rem;
     font-weight: 600;
@@ -88,9 +185,14 @@ html, body {
   
   // Instructions list styling
   ol {
+    // Add proper padding to prevent numbers from being cut off
+    padding-left: 1.5rem;
+    margin-left: 0;
+    
     li {
       line-height: 1.8;
       padding-left: 0.5rem;
+      margin-left: 0;
       
       p {
         margin-bottom: 0.5rem;
@@ -106,6 +208,32 @@ html, body {
   .bg-light {
     background-color: #f8f9fa !important;
     border-left: 3px solid #0d6efd;
+  }
+}
+
+// Chat messages scrollbar styling
+#chat-messages {
+  // Custom scrollbar styling for Firefox
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e0 #f7fafc;
+  
+  // Custom scrollbar styling for Webkit browsers (Chrome, Safari, Edge)
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: #f7fafc;
+    border-radius: 4px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: #cbd5e0;
+    border-radius: 4px;
+    
+    &:hover {
+      background: #a0aec0;
+    }
   }
 }
 

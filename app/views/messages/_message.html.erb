@@ -1,4 +1,4 @@
-<div class="d-flex mb-3 <%= message.role == 'user' ? 'justify-content-end' : 'justify-content-start' %>">
+<div class="d-flex mb-3 message-item <%= message.role == 'user' ? 'justify-content-end' : 'justify-content-start' %>">
   <div class="message-bubble <%= message.role == 'user' ? 'user-message' : 'assistant-message' %>">
     <%= simple_format(message.content) %>
   </div>

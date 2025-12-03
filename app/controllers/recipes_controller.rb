@@ -47,42 +47,26 @@ class RecipesController < ApplicationController
     content = params[:content]
     return redirect_to recipe_path(@recipe), alert: "Empty message - skip processing" if content.empty?
 
+    # Create user message
     @user_message = @chat.messages.create!(
       content: content,
       role: ROLE
     )
+
+    # Process AI response
     response = process_prompt(@chat, @user_message)
+    
+    # Create AI message
     @ai_message = @chat.messages.create!(
       content: response["message"],
       role: "assistant"
     )
 
-    # Normalize shopping_list to array of strings
-    # Filter out any invalid entries and ensure all items are strings
-    if response["shopping_list"].is_a?(Array)
-      response["shopping_list"] = response["shopping_list"].map do |item|
-        if item.is_a?(String)
-          # Already a string, just clean it up
-          item.strip
-        elsif item.is_a?(Hash)
-          # Convert object format to string format
-          item_name = item["item"] || item[:item] || ""
-          quantity = item["quantity"] || item[:quantity] || ""
-          if item_name.present? && quantity.present?
-            "#{quantity} #{item_name}".strip
-          elsif item_name.present?
-            item_name.strip
-          else
-            nil
-          end
-        else
-          nil
-        end
-      end.compact.reject(&:blank?) # Remove nil and blank entries
-    end
-
+    # Normalize shopping_list format and update recipe
+    response["shopping_list"] = normalize_shopping_list(response["shopping_list"])
     @recipe.update!(response.except("message"))
     @recipe.reload
+    
     respond_to do |format|
       format.turbo_stream
       format.html { redirect_to @recipe }
@@ -131,5 +115,29 @@ class RecipesController < ApplicationController
     else
       ""
     end
+  end
+
+  def normalize_shopping_list(shopping_list)
+    # Normalize shopping_list to array of strings
+    # Handles both string arrays and object arrays, converts to simple string format
+    return [] unless shopping_list.is_a?(Array)
+
+    shopping_list.map do |item|
+      if item.is_a?(String)
+        item.strip
+      elsif item.is_a?(Hash)
+        item_name = item["item"] || item[:item] || ""
+        quantity = item["quantity"] || item[:quantity] || ""
+        if item_name.present? && quantity.present?
+          "#{quantity} #{item_name}".strip
+        elsif item_name.present?
+          item_name.strip
+        else
+          nil
+        end
+      else
+        nil
+      end
+    end.compact.reject(&:blank?)
   end
 end

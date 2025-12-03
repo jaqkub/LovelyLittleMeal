@@ -2,26 +2,31 @@
 <% if @chat.messages.count == 2 %>
   <%= turbo_stream.remove "empty-chat-message" %>
 <% end %>
-<%# Append user message to chat messages %>
-<%= turbo_stream.append "chat-messages" do %>
+
+<%# Replace optimistic user message with server-rendered one (maintains position/order) %>
+<%# The optimistic message should always exist since we add it on form submit %>
+<%= turbo_stream.replace "optimistic-user-msg" do %>
   <%= render "messages/message", message: @user_message %>
 <% end %>
-<%# Append AI response to chat messages %>
-<%= turbo_stream.append "chat-messages" do %>
+
+<%# Replace the optimistic loading bubble with actual AI response %>
+<%# Order is maintained: user message (replaced above, stays in place) -> AI message (replaces loading bubble) %>
+<%= turbo_stream.replace "loading" do %>
   <%= render "messages/message", message: @ai_message %>
 <% end %>
+
 <%# Update recipe details section with new recipe data %>
 <%= turbo_stream.replace "recipe-details" do %>
   <%= render "recipes/details", recipe: @recipe %>
 <% end %>
+
 <%# Clear the message input form and reset it %>
 <%= turbo_stream.update "message-form" do %>
   <%= form_with url: message_recipe_path(@recipe),
                 method: :post,
                 class: "d-flex gap-2",
                 data: { 
-                  turbo_frame: "_top",
-                  action: "turbo:submit-start->chat#showLoading turbo:submit-end->chat#hideLoading"
+                  turbo_frame: "_top"
                 } do |f| %>
     <%= f.text_field :content,
                      placeholder: "Type...",
@@ -29,7 +34,8 @@
                      autocomplete: "off",
                      id: "message-content",
                      class: "form-control flex-grow-1",
+                     data: { chat_target: "input" },
                      value: "" %>
-    <%= f.submit "Send", class: "btn btn-primary flex-shrink-0" %>
+    <%= f.submit "Send", class: "btn btn-primary flex-shrink-0", data: { chat_target: "submit" }, disabled: true %>
   <% end %>
 <% end %>
