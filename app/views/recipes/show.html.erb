@@ -7,7 +7,7 @@
   </div>
   <%# Chat section - fixed height with scrollable messages and fixed form at bottom %>
   <div style="min-width: 450px; width: 450px; max-width: 450px; border-radius: 12px;" class="d-flex flex-column bg-white p-3 overflow-hidden" data-controller="chat">
-    <div id="chat-messages" class="overflow-y-auto flex-grow-1 mb-3 d-flex flex-column" style="min-height: 0; scrollbar-width: none;" data-chat-target="messages">
+    <div id="chat-messages" class="overflow-y-auto flex-grow-1 mb-3 d-flex flex-column" style="min-height: 0; justify-content: flex-end;" data-chat-target="messages">
       <%# Initial messages or empty state %>
       <% if @messages.any? %>
         <%= render @messages %>

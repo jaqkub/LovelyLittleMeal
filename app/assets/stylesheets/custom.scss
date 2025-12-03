@@ -36,6 +36,18 @@ html, body {
   }
 }
 
+@keyframes slideInFromRight {
+  // Simple slide in from right to left
+  from {
+    opacity: 0;
+    transform: translateX(50px); // Start from right
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0); // Slide to normal position
+  }
+}
+
 .message-bubble {
   max-width: 75%;
   padding: 0.75rem 1rem;
@@ -51,17 +63,17 @@ html, body {
   }
 }
 
-// User messages (right side) - pale blue
+// User messages (right side) - darker grey using primary color
 .user-message {
-  background-color: #e3f2fd; // Pale blue
-  color: #1565c0;
+  background-color: #272727; // Primary dark grey
+  color: #ffffff; // White text for contrast
   border-bottom-right-radius: 0.25rem;
 }
 
-// Assistant messages (left side) - pale gray
+// Assistant messages (left side) - light grey
 .assistant-message {
-  background-color: #f5f5f5; // Pale gray
-  color: #424242;
+  background-color: #f5f5f5; // Light grey
+  color: #424242; // Dark grey text
   border-bottom-left-radius: 0.25rem;
 }
 
@@ -79,7 +91,7 @@ html, body {
     padding: 0.5rem 1rem;
     
     &:focus {
-      border-color: $primary;
+      border-color: #272727; // Primary color
       box-shadow: 0 0 0 0.2rem rgba(39, 39, 39, 0.25); // #272727 with 25% opacity
     }
   }
@@ -131,13 +143,19 @@ html, body {
 
 // Recipe details styling
 #recipe-details {
+  // Simple animation: slide in from right to left when recipe updates
+  // Only animate if recipe has actual content (has-content class)
+  &.has-content {
+    animation: slideInFromRight 1s ease-out;
+  }
+  
   // Ensure the container can scroll
   overflow-y: auto;
   overflow-x: hidden;
   
   // Custom scrollbar styling for Firefox
   scrollbar-width: thin;
-  scrollbar-color: #cbd5e0 #f7fafc;
+  scrollbar-color: rgba(39, 39, 39, 0.25) #ffffff; // Match input focus glow color
   
   // Custom scrollbar styling for Webkit browsers (Chrome, Safari, Edge)
   &::-webkit-scrollbar {
@@ -145,16 +163,16 @@ html, body {
   }
   
   &::-webkit-scrollbar-track {
-    background: #f7fafc;
+    background: #ffffff;
     border-radius: 4px;
   }
   
   &::-webkit-scrollbar-thumb {
-    background: #cbd5e0;
+    background: rgba(39, 39, 39, 0.25); // Match input focus glow color (#272727 with 25% opacity)
     border-radius: 4px;
     
     &:hover {
-      background: #a0aec0;
+      background: rgba(39, 39, 39, 0.4); // Slightly darker on hover
     }
   }
   
@@ -207,15 +225,21 @@ html, body {
   // Shopping list styling
   .bg-light {
     background-color: #f8f9fa !important;
-    border-left: 3px solid $primary;
+    border-left: 3px solid #272727; // Primary color
   }
 }
 
 // Chat messages scrollbar styling
 #chat-messages {
+  // Ensure scrolling works properly even with justify-content: flex-end
+  // When content is short, it's pushed to bottom; when it overflows, scrolling works
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  
   // Custom scrollbar styling for Firefox
   scrollbar-width: thin;
-  scrollbar-color: #cbd5e0 #f7fafc;
+  scrollbar-color: rgba(39, 39, 39, 0.25) #ffffff; // Match input focus glow color
   
   // Custom scrollbar styling for Webkit browsers (Chrome, Safari, Edge)
   &::-webkit-scrollbar {
@@ -223,16 +247,16 @@ html, body {
   }
   
   &::-webkit-scrollbar-track {
-    background: #f7fafc;
+    background: #ffffff;
     border-radius: 4px;
   }
   
   &::-webkit-scrollbar-thumb {
-    background: #cbd5e0;
+    background: rgba(39, 39, 39, 0.25); // Match input focus glow color (#272727 with 25% opacity)
     border-radius: 4px;
     
     &:hover {
-      background: #a0aec0;
+      background: rgba(39, 39, 39, 0.4); // Slightly darker on hover
     }
   }
 }
