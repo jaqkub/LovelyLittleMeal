@@ -37,20 +37,23 @@
           <!-- Physicals (JSON: age, weight, gender) -->
           <h5 class="mt-4 mb-2">Physical Information</h5>
 
+          <!-- Age (TEXT instead of number) -->
           <div class="mb-3">
             <%= label_tag "user[physicals][age]", "Age", class: "form-label" %>
-            <%= number_field_tag "user[physicals][age]",
+            <%= text_field_tag "user[physicals][age]",
                   @user.physicals&.dig("age"),
                   class: "form-control" %>
           </div>
 
+          <!-- Weight (TEXT instead of number) -->
           <div class="mb-3">
             <%= label_tag "user[physicals][weight]", "Weight (kg)", class: "form-label" %>
-            <%= number_field_tag "user[physicals][weight]",
+            <%= text_field_tag "user[physicals][weight]",
                   @user.physicals&.dig("weight"),
                   class: "form-control" %>
           </div>
 
+          <!-- Gender -->
           <div class="mb-3">
             <%= label_tag "user[physicals][gender]", "Gender", class: "form-label d-block" %>
 

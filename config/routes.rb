@@ -13,4 +13,5 @@ Rails.application.routes.draw do
   get  "/settings/edit", to: "users#edit"
   patch "/settings", to: "users#update"
 
+  resources :user_recipes, only: [:index, :show, :new, :create, :edit, :update, :destroy]
 end

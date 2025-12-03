@@ -8,7 +8,7 @@ class UsersController < ApplicationController
   def update
     @user = current_user
     if @user.update(user_params)
-      redirect_to root_path, notice: "Settings updated."
+      redirect_to user_recipes_path, notice: "Settings updated."
     else
       render :edit, status: :unprocessable_entity
     end
