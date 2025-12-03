@@ -10,8 +10,7 @@ Rails.application.routes.draw do
   # Defines the root path route ("/")
   # root "posts#index"
 
+  # Settings-form for user preferences
   get  "/settings/edit", to: "users#edit"
-  patch "/settings", to: "users#update"
-
-  resources :user_recipes, only: [:index, :show, :new, :create, :edit, :update, :destroy]
+  patch "/settings",     to: "users#update"
 end

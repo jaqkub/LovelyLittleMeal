@@ -7,22 +7,69 @@
 
         <%= form_with model: @user, url: "/settings", method: :patch do |f| %>
 
-          <!-- Name -->
+          <!-- Appliances as checkboxes -->
           <div class="mb-3">
-            <%= f.label :name, class: "form-label" %>
-            <%= f.text_field :name, class: "form-control" %>
+            <%= f.label :appliances, "Available appliances", class: "form-label d-block" %>
+
+            <% appliance_options = {
+                 "stove"          => "Stove",
+                 "oven"           => "Oven",
+                 "microwave"      => "Microwave",
+                 "pan"            => "Pan",
+                 "kettle"         => "Kettle",
+                 "fryer"          => "Fryer",
+                 "food_processor" => "Food processor"
+               } %>
+
+            <% selected_appliances =
+                 if @user.appliances.is_a?(Array)
+                   @user.appliances.map(&:to_s)
+                 elsif @user.appliances.present?
+                   @user.appliances.to_s.split(",").map(&:strip)
+                 else
+                   []
+                 end %>
+
+            <% appliance_options.each do |value, label_text| %>
+              <div class="form-check form-check-inline">
+                <%= check_box_tag "user[appliances][]",
+                                  value,
+                                  selected_appliances.include?(value),
+                                  id: "user_appliances_#{value}",
+                                  class: "form-check-input" %>
+                <%= label_tag "user_appliances_#{value}",
+                              label_text,
+                              class: "form-check-label" %>
+              </div>
+            <% end %>
           </div>
 
-          <!-- Appliances -->
+          <!-- Allergies as checkboxes -->
           <div class="mb-3">
-            <%= f.label :appliances, class: "form-label" %>
-            <%= f.text_field :appliances, class: "form-control" %>
-          </div>
+            <%= f.label :allergies, "Allergies", class: "form-label d-block" %>
 
-          <!-- Allergies -->
-          <div class="mb-3">
-            <%= f.label :allergies, class: "form-label" %>
-            <%= f.text_field :allergies, class: "form-control" %>
+            <% allergy_options = %w[gluten lactose crustaceans nuts egg] %>
+            <% selected_allergies =
+                 if @user.allergies.is_a?(Array)
+                   @user.allergies.map(&:to_s)
+                 elsif @user.allergies.present?
+                   @user.allergies.to_s.split(",").map(&:strip)
+                 else
+                   []
+                 end %>
+
+            <% allergy_options.each do |allergy| %>
+              <div class="form-check form-check-inline">
+                <%= check_box_tag "user[allergies][]",
+                                  allergy,
+                                  selected_allergies.include?(allergy),
+                                  id: "user_allergies_#{allergy}",
+                                  class: "form-check-input" %>
+                <%= label_tag "user_allergies_#{allergy}",
+                              allergy.capitalize,
+                              class: "form-check-label" %>
+              </div>
+            <% end %>
           </div>
 
           <!-- Preferences -->
@@ -34,23 +81,32 @@
                             placeholder: "Example: I want to always use sweetener instead of cane sugar.." %>
           </div>
 
-          <!-- Physicals (JSON: age, weight, gender) -->
+          <!-- Physicals (age, weight, gender) -->
           <h5 class="mt-4 mb-2">Physical Information</h5>
 
-          <!-- Age (TEXT instead of number) -->
+          <% physicals_hash =
+               if @user.physicals.is_a?(Hash)
+                 @user.physicals
+               else
+                 {}
+               end %>
+
+          <!-- Age -->
           <div class="mb-3">
             <%= label_tag "user[physicals][age]", "Age", class: "form-label" %>
             <%= text_field_tag "user[physicals][age]",
-                  @user.physicals&.dig("age"),
-                  class: "form-control" %>
+                  physicals_hash["age"],
+                  class: "form-control",
+                  placeholder: "E.g. 32" %>
           </div>
 
-          <!-- Weight (TEXT instead of number) -->
+          <!-- Weight -->
           <div class="mb-3">
             <%= label_tag "user[physicals][weight]", "Weight (kg)", class: "form-label" %>
             <%= text_field_tag "user[physicals][weight]",
-                  @user.physicals&.dig("weight"),
-                  class: "form-control" %>
+                  physicals_hash["weight"],
+                  class: "form-control",
+                  placeholder: "E.g. 68" %>
           </div>
 
           <!-- Gender -->
@@ -59,7 +115,7 @@
 
             <div class="form-check form-check-inline">
               <%= radio_button_tag "user[physicals][gender]", "male",
-                    @user.physicals&.dig("gender") == "male",
+                    physicals_hash["gender"] == "male",
                     class: "form-check-input",
                     id: "physicals_gender_male" %>
               <%= label_tag "physicals_gender_male", "Male", class: "form-check-label" %>
@@ -67,21 +123,14 @@
 
             <div class="form-check form-check-inline">
               <%= radio_button_tag "user[physicals][gender]", "female",
-                    @user.physicals&.dig("gender") == "female",
+                    physicals_hash["gender"] == "female",
                     class: "form-check-input",
                     id: "physicals_gender_female" %>
               <%= label_tag "physicals_gender_female", "Female", class: "form-check-label" %>
             </div>
           </div>
 
-          <!-- System prompt -->
-          <div class="mb-4">
-            <%= f.label :system_prompt, class: "form-label" %>
-            <%= f.text_area :system_prompt,
-                  rows: 4,
-                  class: "form-control",
-                  placeholder: "Example: I want the chat-bot to be a professional cook, that knows all the variations of a given recipe.." %>
-          </div>
+          <!-- System prompt: updated backend -->
 
           <div class="text-center">
             <%= f.submit "Save settings", class: "btn btn-primary w-100" %>
