@@ -12,14 +12,17 @@ class RecipesController < ApplicationController
   before_action :set_recipe, only: [:message]
 
   def new
-    @chat = current_user.chats.build
-    @recipe = @chat.build_recipe(title: DEFAULT_RECIPE_TITLE, description: DEFAULT_RECIPE_DESCRIPTION)
-    ActiveRecord::Base.transaction do
-      if @chat.save && @recipe.save
+    @recipe = Recipe.new(title: DEFAULT_RECIPE_TITLE, description: DEFAULT_RECIPE_DESCRIPTION)
+    if @recipe.save
+      @chat = current_user.chats.build
+      @chat.recipe = @recipe
+      if @chat.save
         redirect_to recipe_path(@recipe)
       else
-        redirect_to root_path, alert: "Failed to create chat and recipe"
+        redirect_to root_path, alert: "Failed to create chat"
       end
+    else
+      redirect_to root_path, alert: "Failed to create recipe"
     end
   end
 
