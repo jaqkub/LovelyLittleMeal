@@ -10,3 +10,41 @@
 .navbar-lewagon .navbar-brand img {
   width: 40px;
 }
+
+// /* Background text for the navbar */
+// .navbar {
+//   position: relative;        /* creates positioning context for logo text */
+//   overflow: hidden;          /* prevents text from spilling outside */
+// }
+
+// /* Clickable background logo text - styled to look like background text */
+// .navbar-logo-text {
+//   position: absolute;
+//   top: 50%;
+//   left: 50%;
+//   transform: translate(-50%, -50%);
+//   text-decoration: none;      /* remove underline */
+//   color: rgba(0, 0, 0, 0.1); /* very faint text color - adjust opacity as needed */
+//   font-size: 1.5rem;         /* adjust size as needed */
+//   font-weight: 300;          /* lighter weight for subtle appearance */
+//   z-index: 0;                /* behind nav links */
+//   pointer-events: auto;       /* ensure it's clickable */
+//   transition: opacity 0.2s;   /* smooth hover effect */
+  
+//   /* Optional: slightly more visible on hover for better UX */
+//   &:hover {
+//     opacity: 0.3;
+//     color: rgba(0, 0, 0, 0.15);
+//   }
+// }
+
+// /* Ensure navbar links stay above the background text */
+// .navbar-nav .nav-link {
+//   position: relative;
+//   z-index: 1;
+// }
+
+// /* Optional: slightly darken the navbar background so the faint text is visible */
+// .bg-white {
+//   background-color: rgba(255, 255, 255, 0.95) !important;
+// }

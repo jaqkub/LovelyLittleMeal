@@ -1,37 +1,39 @@
-<nav class="navbar navbar-expand-sm navbar-light navbar-lewagon">
+<nav class="navbar navbar-expand-lg bg-white position-relative overflow-hidden">
   <div class="container-fluid">
-    <%= link_to "#", class: "navbar-brand" do %>
-      <%= image_tag "https://raw.githubusercontent.com/lewagon/fullstack-images/master/uikit/logo.png" %>
-    <% end %>
 
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+    <!-- Just to push nav items and hamburger button to the right -->
+    <a class="navbar-brand"></a> 
+
+    <!-- Hamburger (mobile only) -->
+    <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNav">
       <span class="navbar-toggler-icon"></span>
     </button>
 
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-      <ul class="navbar-nav me-auto">
-        <% if user_signed_in? %>
-          <li class="nav-item active">
-            <%= link_to "New chat", new_recipe_path, class: "nav-link" %>
-          </li>
-          <li class="nav-item">
-            <%= link_to "Recipes", recipes_path, class: "nav-link" %>
-          </li>
-          <li class="nav-item dropdown">
-          <a href="#" class="avatar" id="navbarDropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            <%= image_tag "https://kitt.lewagon.com/placeholder/users/ssaunier", class: "avatar", alt: "dropdown menu" %>
-          </a>
-            <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-              <%= link_to "Settings", "/settings/edit", class: "dropdown-item" %>
-              <%= link_to "Log out", destroy_user_session_path, data: {turbo_method: :delete}, class: "dropdown-item" %>
-            </div>
-          </li>
-        <% else %>
-          <li class="nav-item">
-            <%= link_to "Login", new_user_session_path, class: "nav-link" %>
-          </li>
-        <% end %>
+    <!-- Desktop links – visible only ≥lg -->
+    <div class="d-none d-lg-block">
+      <ul class="navbar-nav">
+        <%= render "shared/navbar_items" %>
       </ul>
     </div>
+
   </div>
+
+  <!-- Logo – clickable and goes to root -->
+  <%= link_to root_path, 
+      class: "position-absolute top-50 start-50 translate-middle text-nowrap",
+      style: "pointer-events: auto; z-index: 0; text-decoration: none; color: inherit;" do %>
+    <h1 class="m-0 fs-2">LovelyLittleMeal</h1>
+  <% end %>
 </nav>
+ 
+<!-- Offcanvas drawer (mobile only) -->
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNav">
+  <div class="offcanvas-header">
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+  </div>
+  <div class="offcanvas-body">
+      <ul class="navbar-nav text-end">
+        <%= render "shared/navbar_items" %>
+      </ul>
+  </div>
+</div>

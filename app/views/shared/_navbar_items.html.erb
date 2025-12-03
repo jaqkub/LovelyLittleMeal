@@ -1,0 +1,12 @@
+        <li class="nav-item">
+          <%= link_to "Recipes", recipes_path, class: "nav-link" %>
+        </li>
+        <li class="nav-item">
+          <%= link_to "New Recipe", new_recipe_path, class: "nav-link fw-bold" %>
+        </li>
+        <li class="nav-item">
+          <%= link_to "Settings", "/settings/edit", class: "nav-link" %>
+        </li>
+        <li class="nav-item">
+          <%= link_to "Log out", destroy_user_session_path, data: {turbo_method: :delete}, class: "nav-link" %>
+        </li>

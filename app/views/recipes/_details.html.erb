@@ -2,7 +2,7 @@
   <%# Recipe Header %>
   <div class="mb-4">
     <div class="d-flex align-items-center gap-2 mb-2">
-      <h1 class="mb-0"><%= recipe.title || "Untitled" %></h1>
+      <h2 class="mb-0"><%= recipe.title || "Untitled" %></h2>
       <% if recipe.favorite %>
         <span class="text-warning">★</span>
       <% end %>
@@ -80,8 +80,8 @@
   <% if (!recipe.content.present? || !recipe.content.is_a?(Hash) || recipe.content.empty?) &&
         (!recipe.shopping_list.present? || recipe.shopping_list.empty?) %>
   <div class="text-center text-muted py-5">
-    <p class="mb-0">No recipe details yet. Start chatting to generate a recipe!</p>
-    <p class="mb-0">You can also paste a link to a recipe to validate if it fits your preferences.</p>
+    <p class="mb-0">Start chatting to generate a recipe!</p>
+    <p class="mb-0">Or paste a link to work on a recipe you found online.</p>
   </div>
 <% end %>
 </div>
