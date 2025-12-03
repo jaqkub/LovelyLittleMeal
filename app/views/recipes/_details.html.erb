@@ -1,8 +1,83 @@
 <div id="recipe-details">
-  <h2 class="m-0"><%= recipe.title || "Untitled" %></h2>
-  <p><%= recipe.description || "Missing description" %></p>
-  <p><%= recipe.content || "Missing content" %></p>
-  <p><%= recipe.shopping_list || "Missing shopping list" %></p>
-  <p><%= recipe.recipe_summary_for_prompt || "Missing prompt summary" %></p>
-  <p>Favorite: <%= recipe.favorite %></p>
+  <%# Recipe Header %>
+  <div class="mb-4">
+    <div class="d-flex align-items-center gap-2 mb-2">
+      <h1 class="mb-0"><%= recipe.title || "Untitled" %></h1>
+      <% if recipe.favorite %>
+        <span class="text-warning">★</span>
+      <% end %>
+    </div>
+    <% if recipe.description.present? && recipe.description != "Nothing here yet..." %>
+      <p class="text-muted lead mb-0"><%= recipe.description %></p>
+    <% end %>
+  </div>
+
+  <%# Recipe Content %>
+  <% if recipe.content.present? && recipe.content.is_a?(Hash) %>
+    <%# Long Description %>
+    <% if recipe.content["long_description"].present? %>
+      <div class="mb-4">
+        <p class="mb-0"><%= simple_format(recipe.content["long_description"]) %></p>
+      </div>
+    <% end %>
+
+    <%# Ingredients Section %>
+    <% if recipe.content["ingredients"].present? && recipe.content["ingredients"].is_a?(Array) && recipe.content["ingredients"].any? %>
+      <div class="mb-4">
+        <h3 class="h5 mb-3">Ingredients</h3>
+        <ul class="list-unstyled">
+          <% recipe.content["ingredients"].each do |ingredient| %>
+            <li class="mb-2">
+              <span class="me-2">•</span>
+              <%= ingredient %>
+            </li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <%# Instructions Section %>
+    <% if recipe.content["instructions"].present? && recipe.content["instructions"].is_a?(Array) && recipe.content["instructions"].any? %>
+      <div class="mb-4">
+        <h3 class="h5 mb-3">Instructions</h3>
+        <ol class="ps-3">
+          <% recipe.content["instructions"].each do |instruction| %>
+            <li class="mb-3">
+              <%= simple_format(instruction) %>
+            </li>
+          <% end %>
+        </ol>
+      </div>
+    <% end %>
+  <% end %>
+
+  <%# Shopping List Section %>
+  <% if recipe.shopping_list.present? && recipe.shopping_list.is_a?(Array) && recipe.shopping_list.any? %>
+    <%# Filter out invalid entries - only keep non-empty strings %>
+    <% valid_items = recipe.shopping_list.select { |item| item.is_a?(String) && item.present? && item.strip.length > 0 } %>
+    
+    <% if valid_items.any? %>
+      <div class="mb-4">
+        <h3 class="h5 mb-3">Shopping List</h3>
+        <div class="bg-light p-3 rounded">
+          <ul class="list-unstyled mb-0">
+            <% valid_items.each do |item| %>
+              <li class="mb-2">
+                <span class="me-2">•</span>
+                <%= item.strip %>
+              </li>
+            <% end %>
+          </ul>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+
+  <%# Empty State %>
+  <% if (!recipe.content.present? || !recipe.content.is_a?(Hash) || recipe.content.empty?) && 
+        (!recipe.shopping_list.present? || recipe.shopping_list.empty?) %>
+    <div class="text-center text-muted py-5">
+      <p class="mb-0">No recipe details yet. Start chatting to generate a recipe!</p>
+    </div>
+  <% end %>
 </div>

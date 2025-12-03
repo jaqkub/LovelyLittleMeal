@@ -5,6 +5,11 @@ class RecipesController < ApplicationController
     I am an inexperienced cook looking for simple recepies tailored to my preferences and needs.
     Every time I tell you that I want to eat [insert any food] or I want a recipe for [insert any need] you will create a recipe for me taking into consideration that I am gluten intolerant, lactose intolerant, vegan, and just sligthly retarded.
     If I send a link instead you will visit the link and understand the recipe and then adjust it per my preferences. Same if I send a complete recipe.
+    
+    SHOPPING LIST FORMAT:
+    The shopping_list must be a simple array of strings. Each string should include both the quantity (in metric units) and the item name.
+    Example: ["200g flour", "50g sugar", "2 ripe bananas", "15ml coconut oil"]
+    Always use metric units (g, ml, pieces, etc.) - never use teaspoons, pinches, or other non-metric measurements.
   TEXT
   DEFAULT_RECIPE_TITLE = "Untitled"
   DEFAULT_RECIPE_DESCRIPTION = "Nothing here yet..."
@@ -51,6 +56,30 @@ class RecipesController < ApplicationController
       content: response["message"],
       role: "assistant"
     )
+
+    # Normalize shopping_list to array of strings
+    # Filter out any invalid entries and ensure all items are strings
+    if response["shopping_list"].is_a?(Array)
+      response["shopping_list"] = response["shopping_list"].map do |item|
+        if item.is_a?(String)
+          # Already a string, just clean it up
+          item.strip
+        elsif item.is_a?(Hash)
+          # Convert object format to string format
+          item_name = item["item"] || item[:item] || ""
+          quantity = item["quantity"] || item[:quantity] || ""
+          if item_name.present? && quantity.present?
+            "#{quantity} #{item_name}".strip
+          elsif item_name.present?
+            item_name.strip
+          else
+            nil
+          end
+        else
+          nil
+        end
+      end.compact.reject(&:blank?) # Remove nil and blank entries
+    end
 
     @recipe.update!(response.except("message"))
     @recipe.reload

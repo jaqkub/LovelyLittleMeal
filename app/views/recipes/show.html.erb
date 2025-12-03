@@ -6,26 +6,28 @@
     </div>
   </div>
   <%# Chat section - fixed height with scrollable messages and fixed form at bottom %>
-  <div style="min-width: 300px;" class="d-flex flex-column bg-white p-3 overflow-hidden" data-controller="chat">
+  <div style="min-width: 450px; width: 450px; max-width: 450px" class="d-flex flex-column bg-white p-3 overflow-hidden" data-controller="chat">
     <p class="mb-2 flex-shrink-0">Chat title: <%= @chat.title %></p>
     <div id="chat-messages" class="overflow-y-auto flex-grow-1 mb-3" style="min-height: 0; scrollbar-width: none;" data-chat-target="messages">
+      <%# Initial messages or empty state %>
       <% if @messages.any? %>
         <%= render @messages %>
       <% else %>
-        <p>What are we cooking today?</p>
+        <p id="empty-chat-message" class="text-muted">What are we cooking today?</p>
       <% end %>
-      <%# Loading indicator - shown when processing message %>
-      <div id="chat-loading" class="d-none text-center py-3" data-chat-target="loading">
-        <div class="spinner-border spinner-border-sm text-primary" role="status">
-          <span class="visually-hidden">Loading...</span>
-        </div>
-        <span class="ms-2 text-muted">Thinking...</span>
+    </div>
+    <%# Loading indicator - shown when processing message, positioned above input form %>
+    <div id="chat-loading" class="d-none text-center py-2 mb-2 flex-shrink-0" data-chat-target="loading">
+      <div class="spinner-border spinner-border-sm text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
       </div>
+      <span class="ms-2 text-muted">Thinking...</span>
     </div>
     <div id="message-form" class="flex-shrink-0">
       <%= form_with url: message_recipe_path(@recipe),
                     method: :post,
-                    data: { 
+                    class: "d-flex gap-2",
+                    data: {
                       turbo_frame: "_top",
                       action: "turbo:submit-start->chat#showLoading turbo:submit-end->chat#hideLoading"
                     } do |f| %>
@@ -33,8 +35,9 @@
                          placeholder: "Type...",
                          autofocus: true,
                          autocomplete: "off",
-                         id: "message-content" %>
-        <%= f.submit "Send", class: "btn btn-primary" %>
+                         id: "message-content",
+                         class: "form-control flex-grow-1" %>
+        <%= f.submit "Send", class: "btn btn-primary flex-shrink-0" %>
       <% end %>
     </div>
   </div>

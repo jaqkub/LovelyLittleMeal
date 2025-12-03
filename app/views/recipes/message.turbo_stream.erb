@@ -1,3 +1,7 @@
+<%# Remove "What are we cooking today?" message if it exists (only on first message) %>
+<% if @chat.messages.count == 2 %>
+  <%= turbo_stream.remove "empty-chat-message" %>
+<% end %>
 <%# Append user message to chat messages %>
 <%= turbo_stream.append "chat-messages" do %>
   <%= render "messages/message", message: @user_message %>
@@ -14,13 +18,18 @@
 <%= turbo_stream.update "message-form" do %>
   <%= form_with url: message_recipe_path(@recipe),
                 method: :post,
-                data: { turbo_frame: "_top" } do |f| %>
+                class: "d-flex gap-2",
+                data: { 
+                  turbo_frame: "_top",
+                  action: "turbo:submit-start->chat#showLoading turbo:submit-end->chat#hideLoading"
+                } do |f| %>
     <%= f.text_field :content,
                      placeholder: "Type...",
                      autofocus: true,
                      autocomplete: "off",
                      id: "message-content",
+                     class: "form-control flex-grow-1",
                      value: "" %>
-    <%= f.submit "Send", class: "btn btn-primary send-button" %>
+    <%= f.submit "Send", class: "btn btn-primary flex-shrink-0" %>
   <% end %>
 <% end %>

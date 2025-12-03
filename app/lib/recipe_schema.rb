@@ -14,10 +14,7 @@ class RecipeSchema < RubyLLM::Schema
     array :instructions, of: :string, description: "A numbered list of step-by-step instructions to prepare the recipe"
   end
 
-  array :shopping_list, of: :object do
-    string :item, description: "The name of the shopping item"
-    string :quantity, description: "The quantity in metric units only (e.g., '200g', never use teaspoons or pinches)"
-  end
+  array :shopping_list, of: :string, description: "A simple array of shopping items, each as a string with quantity and item name together. Example: [\"200g flour\", \"50g sugar\", \"2 ripe bananas\", \"15ml coconut oil\"]. Always include the quantity with metric units in each string."
 
   string :recipe_summary_for_prompt, description: "A concise text summary of the recipe, suitable for feeding into future prompts for recommendations"
 
