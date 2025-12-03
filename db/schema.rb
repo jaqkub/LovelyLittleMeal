@@ -33,8 +33,8 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_02_144400) do
     t.index ["chat_id"], name: "index_messages_on_chat_id"
   end
 
-  create_table "user_recipes", force: :cascade do |t|
-    t.string "recipe_name"
+  create_table "user_recipes", force: :cascade do |t| # TODO how about just recipes?
+    t.string "recipe_name" # TODO should be title or just name
     t.text "description"
     t.text "content"
     t.json "shopping_list"

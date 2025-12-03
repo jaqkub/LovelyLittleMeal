@@ -1,0 +1,28 @@
+<div class="d-flex p-3 gap-3 h-100 justif">
+  <div class="flex-grow-1 d-flex flex-column bg-white p-3">
+    <div id="recipe-details">
+      <%= render "recipes/details", recipe: @recipe %>
+    </div>
+  </div>
+  <div style="min-width: 300px;" class="d-flex flex-column bg-white p-3">
+    <p>Chat title: <%= @chat.title %></p>
+    <div id="chat-messages" class="h-100 overflow-y: auto">
+      <% if @messages.any? %>
+        <%= render @messages %>
+      <% else %>
+        <p>What are we cooking today?</p>
+      <% end %>
+    </div>
+    <div id="message-form">
+      <%= form_with url: message_recipe_path(@recipe),
+                    method: :post,
+                    data: { turbo_frame: "_top" } do |f| %>
+        <%= f.text_field :content,
+                         placeholder: "Type...",
+                         autofocus: true,
+                         id: "message-content" %>
+        <%= f.submit "Send", class: "btn btn-primary" %>
+      <% end %>
+    </div>
+  </div>
+</div>
