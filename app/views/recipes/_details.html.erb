@@ -1,0 +1,8 @@
+<div id="recipe-details">
+  <h2 class="m-0"><%= recipe.title || "Untitled" %></h2>
+  <p><%= recipe.description || "Missing description" %></p>
+  <p><%= recipe.content || "Missing content" %></p>
+  <p><%= recipe.shopping_list || "Missing shopping list" %></p>
+  <p><%= recipe.recipe_summary_for_prompt || "Missing prompt summary" %></p>
+  <p>Favorite: <%= recipe.favorite %></p>
+</div>

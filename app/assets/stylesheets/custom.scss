@@ -1,0 +1,18 @@
+// Global height styles for full-viewport layouts
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+// Ensure main content area can use flexbox properly
+#main-content {
+  display: flex;
+  flex-direction: column;
+}
+
+// Hide default Turbo progress bar (we use custom loading indicator in chat)
+.turbo-progress-bar {
+  display: none !important;
+}
+

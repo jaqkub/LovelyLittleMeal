@@ -10,18 +10,18 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_12_02_144400) do
+ActiveRecord::Schema[7.1].define(version: 2025_12_03_082140) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
   create_table "chats", force: :cascade do |t|
     t.string "title"
     t.bigint "user_id", null: false
-    t.bigint "user_recipe_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "recipe_id", null: false
+    t.index ["recipe_id"], name: "index_chats_on_recipe_id"
     t.index ["user_id"], name: "index_chats_on_user_id"
-    t.index ["user_recipe_id"], name: "index_chats_on_user_recipe_id"
   end
 
   create_table "messages", force: :cascade do |t|
@@ -33,15 +33,19 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_02_144400) do
     t.index ["chat_id"], name: "index_messages_on_chat_id"
   end
 
-  create_table "user_recipes", force: :cascade do |t|
-    t.string "recipe_name"
-    t.text "description"
-    t.text "content"
-    t.json "shopping_list"
-    t.string "prompt_summary"
-    t.boolean "favorite"
+  create_table "recipes", force: :cascade do |t|
+    t.string "title", null: false
+    t.text "description", null: false
+    t.jsonb "content", default: {}, null: false
+    t.jsonb "shopping_list", default: [], null: false
+    t.text "recipe_summary_for_prompt", default: "", null: false
+    t.boolean "favorite", default: false, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["content"], name: "index_recipes_on_content", using: :gin
+    t.index ["shopping_list"], name: "index_recipes_on_shopping_list", using: :gin
+    t.index ["title", "favorite"], name: "index_recipes_on_title_and_favorite"
+    t.index ["title"], name: "index_recipes_on_title"
   end
 
   create_table "users", force: :cascade do |t|
@@ -61,7 +65,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_12_02_144400) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
-  add_foreign_key "chats", "user_recipes"
+  add_foreign_key "chats", "recipes"
   add_foreign_key "chats", "users"
   add_foreign_key "messages", "chats"
 end

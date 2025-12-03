@@ -1,5 +1,5 @@
 class Chat < ApplicationRecord
   belongs_to :user
-  belongs_to :user_recipe
+  belongs_to :recipe
   has_many :messages
 end

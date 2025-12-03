@@ -1,0 +1,26 @@
+<%# Append user message to chat messages %>
+<%= turbo_stream.append "chat-messages" do %>
+  <%= render "messages/message", message: @user_message %>
+<% end %>
+<%# Append AI response to chat messages %>
+<%= turbo_stream.append "chat-messages" do %>
+  <%= render "messages/message", message: @ai_message %>
+<% end %>
+<%# Update recipe details section with new recipe data %>
+<%= turbo_stream.replace "recipe-details" do %>
+  <%= render "recipes/details", recipe: @recipe %>
+<% end %>
+<%# Clear the message input form and reset it %>
+<%= turbo_stream.update "message-form" do %>
+  <%= form_with url: message_recipe_path(@recipe),
+                method: :post,
+                data: { turbo_frame: "_top" } do |f| %>
+    <%= f.text_field :content,
+                     placeholder: "Type...",
+                     autofocus: true,
+                     autocomplete: "off",
+                     id: "message-content",
+                     value: "" %>
+    <%= f.submit "Send", class: "btn btn-primary send-button" %>
+  <% end %>
+<% end %>

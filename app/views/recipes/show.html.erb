@@ -1,0 +1,41 @@
+<div class="d-flex p-3 gap-3 h-100">
+  <%# Recipe section - scrollable when content overflows %>
+  <div class="flex-grow-1 d-flex flex-column bg-white p-3 overflow-hidden">
+    <div id="recipe-details" class="overflow-y-auto flex-grow-1" style="min-height: 0;">
+      <%= render "recipes/details", recipe: @recipe %>
+    </div>
+  </div>
+  <%# Chat section - fixed height with scrollable messages and fixed form at bottom %>
+  <div style="min-width: 300px;" class="d-flex flex-column bg-white p-3 overflow-hidden" data-controller="chat">
+    <p class="mb-2 flex-shrink-0">Chat title: <%= @chat.title %></p>
+    <div id="chat-messages" class="overflow-y-auto flex-grow-1 mb-3" style="min-height: 0; scrollbar-width: none;" data-chat-target="messages">
+      <% if @messages.any? %>
+        <%= render @messages %>
+      <% else %>
+        <p>What are we cooking today?</p>
+      <% end %>
+      <%# Loading indicator - shown when processing message %>
+      <div id="chat-loading" class="d-none text-center py-3" data-chat-target="loading">
+        <div class="spinner-border spinner-border-sm text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <span class="ms-2 text-muted">Thinking...</span>
+      </div>
+    </div>
+    <div id="message-form" class="flex-shrink-0">
+      <%= form_with url: message_recipe_path(@recipe),
+                    method: :post,
+                    data: { 
+                      turbo_frame: "_top",
+                      action: "turbo:submit-start->chat#showLoading turbo:submit-end->chat#hideLoading"
+                    } do |f| %>
+        <%= f.text_field :content,
+                         placeholder: "Type...",
+                         autofocus: true,
+                         autocomplete: "off",
+                         id: "message-content" %>
+        <%= f.submit "Send", class: "btn btn-primary" %>
+      <% end %>
+    </div>
+  </div>
+</div>

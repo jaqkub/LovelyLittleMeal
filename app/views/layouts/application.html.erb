@@ -8,17 +8,15 @@
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>
-  <body>
-      <%= link_to "Skip to main content", "#main-content", class: "visually-hidden-focusable" %>
-    <header>
+  <body class="d-flex flex-column" style="height: 100vh; overflow: hidden;">
+    <%= link_to "Skip to main content", "#main-content", class: "visually-hidden-focusable" %>
+    <header class="flex-shrink-0">
       <%= render "shared/navbar" %>
     </header>
-
-    <main id="main-content">
-    <%= yield %>
-    <p class="notice"><%= notice %></p>
-    <p class="alert"><%= alert %></p>
-
+    <main id="main-content" class="flex-grow-1 overflow-hidden">
+      <%= yield %>
+      <p class="notice"><%= notice %></p>
+      <p class="alert"><%= alert %></p>
     </main>
   </body>
 </html>
