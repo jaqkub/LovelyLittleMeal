@@ -3,14 +3,25 @@
   <div class="overflow-y-auto flex-grow-1" style="min-height: 0; max-height: 100%;">
     <% if @recipes.any? %>
       <% @recipes.each do |recipe| %>
-        <div class="mb-3 pb-3 border-bottom">
-          <%= link_to recipe_path(recipe), class: "text-decoration-none text-dark", data: { turbo_prefetch: false } do %>
-            <h3 class="h5 mb-1"><%= recipe.title || "Untitled Recipe" %></h3>
-            <% if recipe.description.present? && recipe.description != "Nothing here yet..." %>
-              <p class="text-muted mb-1"><%= recipe.description %></p>
+        <div class="mb-3 pb-3 border-bottom d-flex justify-content-between align-items-start">
+          <div class="flex-grow-1">
+            <%= link_to recipe_path(recipe), class: "text-decoration-none text-dark", data: { turbo_prefetch: false } do %>
+              <h3 class="h5 mb-1"><%= recipe.title || "Untitled Recipe" %></h3>
+              <% if recipe.description.present? && recipe.description != "Nothing here yet..." %>
+                <p class="text-muted mb-1"><%= recipe.description %></p>
+              <% end %>
+              <p class="text-muted small mb-0">Created: <%= recipe.created_at.strftime("%B %d, %Y") %></p>
             <% end %>
-            <p class="text-muted small mb-0">Created: <%= recipe.created_at.strftime("%B %d, %Y") %></p>
-          <% end %>
+          </div>
+
+          <span id="favorite-toggle-<%= recipe.id %>">
+            <%= button_to toggle_favorite_recipe_path(recipe),
+                          method: :patch,
+                          class: "favorite-button",
+                          form_class: "d-inline" do %>
+              <%= recipe.favorite? ? "★" : "☆" %>
+            <% end %>
+          </span>
         </div>
       <% end %>
     <% else %>
@@ -23,8 +34,8 @@
 
 <% right_content = capture do %>
   <div class="d-flex align-items-center justify-content-center flex-grow-1">
-    <%= link_to "New Recipe", new_recipe_path, 
-        class: "btn btn-primary btn-lg", 
+    <%= link_to "New Recipe", new_recipe_path,
+        class: "btn btn-primary btn-lg",
         data: { turbo_prefetch: false },
         style: "padding: 1rem 2rem; font-size: 1.25rem;" %>
   </div>

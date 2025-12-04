@@ -5,7 +5,7 @@ class RecipesController < ApplicationController
     I am an inexperienced cook looking for simple recepies tailored to my preferences and needs.
     Every time I tell you that I want to eat [insert any food] or I want a recipe for [insert any need] you will create a recipe for me taking into consideration that I am gluten intolerant, lactose intolerant, vegan, and just sligthly retarded.
     If I send a link instead you will visit the link and understand the recipe and then adjust it per my preferences. Same if I send a complete recipe.
-    
+
     SHOPPING LIST FORMAT:
     The shopping_list must be a simple array of strings. Each string should include both the quantity (in metric units) and the item name.
     Example: ["200g flour", "50g sugar", "2 ripe bananas", "15ml coconut oil"]
@@ -55,7 +55,7 @@ class RecipesController < ApplicationController
 
     # Process AI response
     response = process_prompt(@chat, @user_message)
-    
+
     # Create AI message
     @ai_message = @chat.messages.create!(
       content: response["message"],
@@ -66,13 +66,26 @@ class RecipesController < ApplicationController
     response["shopping_list"] = normalize_shopping_list(response["shopping_list"])
     @recipe.update!(response.except("message"))
     @recipe.reload
-    
+
     respond_to do |format|
       format.turbo_stream
       format.html { redirect_to @recipe }
     end
   rescue ActiveRecord::RecordInvalid => e
     redirect_to recipe_path(@recipe), alert: "Failed to send message: #{e.message}"
+  end
+
+  def toggle_favorite
+    @recipe = current_user.recipes.find(params[:id])
+    @recipe.update(favorite: !@recipe.favorite)
+
+    respond_to do |format|
+      format.turbo_stream
+      format.html do
+        redirect_back fallback_location: recipe_path(@recipe),
+                      notice: (@recipe.favorite? ? "Added to favorites" : "Removed from favorites")
+      end
+    end
   end
 
   private

@@ -3,9 +3,16 @@
   <div class="mb-4">
     <div class="d-flex align-items-center gap-2 mb-2">
       <h2 class="mb-0"><%= recipe.title || "Untitled" %></h2>
-      <% if recipe.favorite %>
-        <span class="text-warning">★</span>
-      <% end %>
+
+        <span id="favorite-toggle-<%= recipe.id %>">
+          <%= button_to toggle_favorite_recipe_path(recipe),
+                    method: :patch,
+                    class: "favorite-button",
+                    form_class: "d-inline" do %>
+          <%= recipe.favorite? ? "★" : "☆" %>
+          <% end %>
+        </span>
+
     </div>
     <% if recipe.description.present? && recipe.description != "Nothing here yet..." %>
       <p class="text-muted lead mb-0"><%= recipe.description %></p>
@@ -22,7 +29,7 @@
     <%# Ingredients and Instructions - Side by Side %>
     <% has_ingredients = recipe.content["ingredients"].present? && recipe.content["ingredients"].is_a?(Array) && recipe.content["ingredients"].any? %>
     <% has_instructions = recipe.content["instructions"].present? && recipe.content["instructions"].is_a?(Array) && recipe.content["instructions"].any? %>
-    
+
     <% if has_ingredients || has_instructions %>
       <div class="mb-4 d-flex flex-column flex-md-row gap-4">
         <%# Ingredients Section %>
@@ -39,7 +46,7 @@
             </ul>
           </div>
         <% end %>
-        
+
         <%# Instructions Section %>
         <% if has_instructions %>
           <div class="flex-grow-1" style="min-width: 0;">
