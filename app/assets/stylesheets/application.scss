@@ -11,6 +11,16 @@
 @import "components/index";
 @import "custom";
 
+#navbar {
+  background-color: #efefef !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+}
+
+#user-settings-edit {
+  background-color: #ebeaea;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.06);
 .favorite-button {
   background: none;
   border: none;
