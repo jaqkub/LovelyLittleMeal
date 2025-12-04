@@ -13,6 +13,14 @@
           <% end %>
         </span>
 
+        <%= button_to recipe_path(recipe),
+                      method: :delete,
+                      data: { turbo_confirm: "Delete this recipe?" },
+                      class: "btn btn-sm btn-outline-danger icon-button",
+                      form_class: "d-inline" do %>
+          🗑️
+        <% end %>
+
     </div>
     <% if recipe.description.present? && recipe.description != "Nothing here yet..." %>
       <p class="text-muted lead mb-0"><%= recipe.description %></p>

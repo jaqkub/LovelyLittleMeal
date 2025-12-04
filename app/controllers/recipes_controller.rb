@@ -15,7 +15,19 @@ class RecipesController < ApplicationController
     "food_processor" => "Food processor"
   }.freeze
 
-  before_action :set_recipe, only: [:message]
+  # Fixed list of available appliances - user selects from these options
+  # Any appliance not selected is considered unavailable and must NOT be used in recipes
+  AVAILABLE_APPLIANCES = {
+    "stove" => "Stove",
+    "oven" => "Oven",
+    "microwave" => "Microwave",
+    "pan" => "Pan",
+    "kettle" => "Kettle",
+    "fryer" => "Fryer",
+    "food_processor" => "Food processor"
+  }.freeze
+
+  before_action :set_recipe, only: %i[message destroy]
 
   def new
     @recipe = Recipe.new(title: DEFAULT_RECIPE_TITLE, description: DEFAULT_RECIPE_DESCRIPTION)
@@ -39,6 +51,14 @@ class RecipesController < ApplicationController
   end
 
   def index
+    current_user.recipes
+                .left_joins(chat: :messages)
+                .where(
+                  title: DEFAULT_RECIPE_TITLE
+                )
+                .where(messages: { id: nil })
+                .destroy_all
+
     @recipes = current_user.recipes
   end
 
@@ -93,6 +113,11 @@ class RecipesController < ApplicationController
                       notice: (@recipe.favorite? ? "Added to favorites" : "Removed from favorites")
       end
     end
+  end
+
+  def destroy
+    @recipe.destroy
+    redirect_to recipes_path, notice: "Recipe deleted"
   end
 
   private
