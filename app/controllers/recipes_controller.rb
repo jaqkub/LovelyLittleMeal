@@ -5,7 +5,7 @@ class RecipesController < ApplicationController
     I am an inexperienced cook looking for simple recepies tailored to my preferences and needs.
     Every time I tell you that I want to eat [insert any food] or I want a recipe for [insert any need] you will create a recipe for me taking into consideration that I am gluten intolerant, lactose intolerant, vegan, and just sligthly retarded.
     If I send a link instead you will visit the link and understand the recipe and then adjust it per my preferences. Same if I send a complete recipe.
-    
+
     SHOPPING LIST FORMAT:
     The shopping_list must be a simple array of strings. Each string should include both the quantity (in metric units) and the item name.
     Example: ["200g flour", "50g sugar", "2 ripe bananas", "15ml coconut oil"]
@@ -55,18 +55,17 @@ class RecipesController < ApplicationController
 
     # Process AI response
     response = process_prompt(@chat, @user_message)
-    
+
     # Create AI message
     @ai_message = @chat.messages.create!(
       content: response["message"],
       role: "assistant"
     )
 
-    # Normalize shopping_list format and update recipe
-    response["shopping_list"] = normalize_shopping_list(response["shopping_list"])
+    # Update recipe with AI response (shopping_list is already an array of strings from RecipeSchema)
     @recipe.update!(response.except("message"))
     @recipe.reload
-    
+
     respond_to do |format|
       format.turbo_stream
       format.html { redirect_to @recipe }
@@ -83,21 +82,21 @@ class RecipesController < ApplicationController
 
   def process_prompt(chat, user_message)
     RubyLLM.chat(model: "gpt-4o")
-      .with_instructions(SYSTEM_PROMPT + system_prompt_addition(chat.recipe))
-      .with_schema(RecipeSchema)
-      .ask(user_message.content)
-      .content
+           .with_instructions(SYSTEM_PROMPT + system_prompt_addition(chat.recipe))
+           .with_schema(RecipeSchema)
+           .ask(user_message.content)
+           .content
   end
 
   def system_prompt_addition(recipe)
     # Check if recipe has meaningful content (not just default empty values)
     # content is jsonb, so check if it has actual data beyond empty hash
     has_content = recipe &&
-      recipe.description.present? &&
-      recipe.description != DEFAULT_RECIPE_DESCRIPTION &&
-      recipe.content.present? &&
-      recipe.content.is_a?(Hash) &&
-      recipe.content.any?
+                  recipe.description.present? &&
+                  recipe.description != DEFAULT_RECIPE_DESCRIPTION &&
+                  recipe.content.present? &&
+                  recipe.content.is_a?(Hash) &&
+                  recipe.content.any?
 
     if has_content
       <<~TEXT
@@ -115,29 +114,5 @@ class RecipesController < ApplicationController
     else
       ""
     end
-  end
-
-  def normalize_shopping_list(shopping_list)
-    # Normalize shopping_list to array of strings
-    # Handles both string arrays and object arrays, converts to simple string format
-    return [] unless shopping_list.is_a?(Array)
-
-    shopping_list.map do |item|
-      if item.is_a?(String)
-        item.strip
-      elsif item.is_a?(Hash)
-        item_name = item["item"] || item[:item] || ""
-        quantity = item["quantity"] || item[:quantity] || ""
-        if item_name.present? && quantity.present?
-          "#{quantity} #{item_name}".strip
-        elsif item_name.present?
-          item_name.strip
-        else
-          nil
-        end
-      else
-        nil
-      end
-    end.compact.reject(&:blank?)
   end
 end
