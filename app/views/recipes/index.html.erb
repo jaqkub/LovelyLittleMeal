@@ -1,35 +1,84 @@
 <% left_content = capture do %>
   <h2 class="mb-3">Your saved recipes</h2>
-  <div class="overflow-y-auto flex-grow-1" style="min-height: 0; max-height: 100%;">
-    <% if @recipes.any? %>
-      <% @recipes.each do |recipe| %>
-        <div class="recipe-card mb-3 pb-3 border-bottom d-flex justify-content-between align-items-start">
-          <div class="flex-grow-1">
-            <%= link_to recipe_path(recipe), class: "text-decoration-none text-dark", data: { turbo_prefetch: false } do %>
-              <h3 class="h5 mb-1"><%= recipe.title || "Untitled Recipe" %></h3>
-              <% if recipe.description.present? && recipe.description != "Nothing here yet..." %>
-                <p class="text-muted mb-1"><%= recipe.description %></p>
-              <% end %>
-              <p class="text-muted small mb-0">Created: <%= recipe.created_at.strftime("%B %d, %Y") %></p>
-            <% end %>
-          </div>
 
-          <span id="favorite-toggle-<%= recipe.id %>">
-            <%= button_to toggle_favorite_recipe_path(recipe),
-                          method: :patch,
-                          class: "favorite-button",
-                          form_class: "d-inline" do %>
-              <%= recipe.favorite? ? "★" : "☆" %>
+  <%= form_with url: recipes_path,
+                method: :get,
+                class: "mb-3",
+                data: { turbo_frame: "recipes_list" } do %>
+
+    <!-- FILTER line: SEARCH + FAVORITES -->
+    <div class="d-flex align-items-center">
+
+      <!-- SEARCH FIELD -->
+      <div class="input-group flex-grow-1" style="max-width: 700px;">
+        <%= text_field_tag :query,
+                           params[:query],
+                           class: "form-control",
+                           placeholder: "Search your recipes...",
+                           style: "padding: 8px 10px;",
+                           oninput: "debounceSubmit(this)" %>
+
+        <button class="btn btn-dark ms-2 px-3 rounded-3" type="submit">
+          Search
+        </button>
+      </div>
+
+      <!-- FAVORITES CHECKBOX -->
+      <div class="form-check ms-auto d-flex align-items-center">
+        <%= check_box_tag :favorites,
+                          "1",
+                          params[:favorites] == "1",
+                          class: "form-check-input",
+                          onchange: "this.form.requestSubmit()" %>
+
+        <%= label_tag :favorites,
+                      "Show favorites only",
+                      class: "form-check-label",
+                      style: "font-size: 1rem; margin-left: 0.35rem;" %>
+      </div>
+
+    </div>
+
+  <% end %>
+
+  <%= turbo_frame_tag "recipes_list" do %>
+    <div class="overflow-y-auto flex-grow-1" style="min-height: 0; max-height: 100%;">
+      <% if @recipes.any? %>
+        <% @recipes.each do |recipe| %>
+          <div class="recipe-card mb-3 pb-3 border-bottom d-flex justify-content-between align-items-start">
+            <div class="flex-grow-1">
+              <%= link_to recipe_path(recipe), class: "text-decoration-none text-dark", data: { turbo_prefetch: false } do %>
+                <h3 class="h5 mb-1"><%= recipe.title || "Untitled Recipe" %></h3>
+                <% if recipe.description.present? && recipe.description != "Nothing here yet..." %>
+                  <p class="text-muted mb-1"><%= recipe.description %></p>
+                <% end %>
+                <p class="text-muted small mb-0">Created: <%= recipe.created_at.strftime("%B %d, %Y") %></p>
+              <% end %>
+            </div>
+
+            <span id="favorite-toggle-<%= recipe.id %>">
+              <%= button_to toggle_favorite_recipe_path(recipe),
+                            method: :patch,
+                            class: "favorite-button",
+                            form_class: "d-inline" do %>
+                <%= recipe.favorite? ? "★" : "☆" %>
+              <% end %>
+            </span>
+          </div>
+        <% end %>
+      <% else %>
+        <div class="d-flex align-items-center justify-content-center flex-grow-1">
+          <p class="text-muted mb-0">
+            <% if params[:query].present? || params[:favorites] == "1" %>
+              No recipes matched your filters.
+            <% else %>
+              You don't have any recipes yet.
             <% end %>
-          </span>
+          </p>
         </div>
       <% end %>
-    <% else %>
-      <div class="d-flex align-items-center justify-content-center flex-grow-1">
-        <p class="text-muted mb-0">You don't have any recipes yet.</p>
-      </div>
-    <% end %>
-  </div>
+    </div>
+  <% end %>
 <% end %>
 
 <% right_content = capture do %>
@@ -42,3 +91,16 @@
 <% end %>
 
 <%= render "recipes/two_column_layout", left_content: left_content, right_content: right_content %>
+
+<script>
+  // enkel global debounce-funksjon for søkefeltet
+  let recipesFilterDebounceTimer;
+
+  function debounceSubmit(input) {
+    clearTimeout(recipesFilterDebounceTimer);
+
+    recipesFilterDebounceTimer = setTimeout(() => {
+      input.form.requestSubmit();
+    }, 300); // juster tiden her om du vil (ms)
+  }
+</script>

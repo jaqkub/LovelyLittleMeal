@@ -28,6 +28,18 @@ class RecipesController < ApplicationController
 
   def index
     @recipes = current_user.recipes
+
+    # FILTER:
+    if params[:query].present?
+      @recipes = @recipes.where(
+        "recipes.title ILIKE :q OR recipes.description ILIKE :q",
+        q: "%#{params[:query]}%"
+      )
+    end
+
+    if params[:favorites] == "1"
+      @recipes = @recipes.where(favorite: true)
+    end
   end
 
   def message
