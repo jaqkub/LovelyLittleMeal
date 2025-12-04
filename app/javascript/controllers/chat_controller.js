@@ -8,7 +8,12 @@ export default class extends Controller {
 
   connect() {
     // Scroll to bottom on initial load
-    this.scrollToBottom()
+    // Use requestAnimationFrame to ensure layout is complete before scrolling
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        this.scrollToBottom()
+      })
+    })
     
     // Set up input validation for send button
     this.setupInputValidation()
