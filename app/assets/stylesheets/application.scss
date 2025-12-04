@@ -10,3 +10,16 @@
 // Your CSS partials
 @import "components/index";
 @import "custom";
+
+.favorite-button {
+  background: none;
+  border: none;
+  font-size: 28px;
+  padding: 0;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.favorite-button:hover {
+  opacity: 0.7;
+}

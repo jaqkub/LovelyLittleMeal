@@ -1,0 +1,10 @@
+<%= turbo_stream.replace "favorite-toggle-#{@recipe.id}" do %>
+  <span id="favorite-toggle-<%= @recipe.id %>">
+    <%= button_to toggle_favorite_recipe_path(@recipe),
+                  method: :patch,
+                  class: "favorite-button",
+                  form_class: "d-inline" do %>
+      <%= @recipe.favorite? ? "★" : "☆" %>
+    <% end %>
+  </span>
+<% end %>
