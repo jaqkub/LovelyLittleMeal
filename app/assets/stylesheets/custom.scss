@@ -239,15 +239,13 @@ html, body {
 // Chat messages scrollbar styling
 #chat-messages {
   // Flexbox container for messages
-  // justify-content: flex-end pushes messages to bottom when content is short
-  // When content overflows, scrolling works normally - the key is ensuring
-  // the container has proper overflow handling and JavaScript scrolls to bottom on load
+  // Spacer div (#messages-spacer) pushes messages to bottom when content is short
+  // When content overflows, spacer shrinks and scrolling works normally
+  // This approach avoids justify-content: flex-end which interferes with scrolling
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
   
   // Enable scrolling - critical for scroll functionality
-  // Must be set to allow scrolling when content overflows
   overflow-y: auto;
   overflow-x: hidden;
   

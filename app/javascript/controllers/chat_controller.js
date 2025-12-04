@@ -168,6 +168,15 @@ export default class extends Controller {
         }
       }, 200)
     }
+    
+    // Add spacer if it doesn't exist (so messages appear at bottom)
+    // This happens when the first message is sent
+    if (this.hasMessagesTarget && !document.getElementById('messages-spacer')) {
+      const spacer = document.createElement('div')
+      spacer.id = 'messages-spacer'
+      spacer.style.cssText = 'flex: 1 1 0; min-height: 0;'
+      this.messagesTarget.insertBefore(spacer, this.messagesTarget.firstChild)
+    }
   }
 
   isNearBottom() {

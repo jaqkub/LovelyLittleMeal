@@ -1,4 +1,5 @@
 <%# Remove "What are we cooking today?" message if it exists (only on first message) %>
+<%# JavaScript handles adding the spacer when empty message is hidden %>
 <% if @chat.messages.count == 2 %>
   <%= turbo_stream.remove "empty-chat-message" %>
 <% end %>
