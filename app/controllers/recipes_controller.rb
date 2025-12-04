@@ -49,7 +49,19 @@ class RecipesController < ApplicationController
 
     @recipes = current_user.recipes
                            .order(favorite: :desc, created_at: :desc)
+
+  if params[:query].present?
+    @recipes = @recipes.where(
+      "recipes.title ILIKE :q OR recipes.description ILIKE :q",
+      q: "%#{params[:query]}%"
+    )
   end
+
+  if params[:favorites] == "1"
+    @recipes = @recipes.where(favorite: true)
+  end
+
+end
 
   def message
     @chat = @recipe.chat

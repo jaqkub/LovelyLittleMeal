@@ -1,5 +1,44 @@
 <% left_content = capture do %>
   <h2 class="mb-3">Your saved recipes</h2>
+    <%= form_with url: recipes_path,
+              method: :get,
+              class: "mb-3",
+              data: { turbo_frame: "recipes_list" } do %>
+
+  <div class="d-flex align-items-center">
+
+    <!-- SEARCH FIELD -->
+    <div class="input-group flex-grow-1" style="max-width: 700px;">
+      <%= text_field_tag :query,
+                         params[:query],
+                         class: "form-control",
+                         placeholder: "Search your recipes...",
+                         style: "padding: 8px 10px;",
+                         oninput: "this.form.requestSubmit()" %>
+
+      <button class="btn btn-dark ms-2 px-3 rounded-3" type="submit">
+        Search
+      </button>
+    </div>
+
+    <!-- FAVORITES CHECKBOX -->
+    <div class="form-check ms-auto d-flex align-items-center">
+      <%= check_box_tag :favorites,
+                        "1",
+                        params[:favorites] == "1",
+                        class: "form-check-input",
+                        onchange: "this.form.requestSubmit()" %>
+
+      <%= label_tag :favorites,
+                    "Show favorites only",
+                    class: "form-check-label",
+                    style: "font-size: 1rem; margin-left: 0.35rem;" %>
+    </div>
+
+  </div>
+  <% end %>
+
+  <turbo-frame id="recipes_list">
   <div class="overflow-y-auto flex-grow-1" style="min-height: 0; max-height: 100%;">
     <% if @recipes.any? %>
       <% @recipes.each do |recipe| %>
@@ -48,6 +87,7 @@
       </div>
     <% end %>
   </div>
+  </turbo-frame>
 <% end %>
 
 <% right_content = capture do %>
