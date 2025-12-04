@@ -8,7 +8,7 @@
   <div id="chat-messages" class="overflow-y-auto flex-grow-1 mb-3 d-flex flex-column" style="min-height: 0; justify-content: flex-end;" data-chat-target="messages">
     <%# Initial messages or empty state %>
     <% if @messages.any? %>
-      <%= render @messages %>
+      <%= render @messages %> 
     <% else %>
       <div id="empty-chat-message" class="d-flex align-items-center justify-content-center flex-grow-1">
         <p class="text-muted mb-0">What are we cooking today?</p>
