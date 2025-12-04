@@ -21,6 +21,25 @@
   background-color: #ebeaea;
   border-radius: 16px;
   box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+}
+
+.text-muted {
+  font-size: 20px;
+  margin-top: 4rem;
+}
+
+.recipe-card {
+  background-color: #f7f7f7;
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+}
+
+.recipe-card:hover {
+  background-color: #e5e5e5;
+  transition: background-color 0.15s ease-in-out;
+}
+
 .favorite-button {
   background: none;
   border: none;
