@@ -18,11 +18,6 @@ before_action :authenticate_user!
       permitted[:allergies] = Array(permitted[:allergies]).reject(&:blank?).join(", ")
     end
 
-    # physicals
-    if permitted[:physicals].is_a?(ActionController::Parameters)
-      permitted[:physicals] = permitted[:physicals].to_unsafe_h
-    end
-
     if @user.update(permitted)
       redirect_to recipes_path, notice: "Settings updated"
     else
@@ -36,7 +31,9 @@ before_action :authenticate_user!
     params.require(:user).permit(
       :preferences,
       :system_prompt,
-      physicals: {},
+      :age,
+      :weight,
+      :gender,
       allergies: [],
       appliances: []
     )
