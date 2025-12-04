@@ -1,13 +1,15 @@
-<h2>Your saved recipes</h2>
+<div class="p-3">
+  <h2>Your saved recipes</h2>
 
-<% if @recipes.any? %>
-  <% @recipes.each do |recipe| %>
-    <div>
-      <p>Recipe ID: <%= recipe.id %></p>
-      <p>Created at: <%= recipe.created_at %></p>
-    </div>
+  <% if @recipes.any? %>
+    <% @recipes.each do |recipe| %>
+      <div>
+        <p>Recipe ID: <%= recipe.id %></p>
+        <p>Created at: <%= recipe.created_at %></p>
+      </div>
+    <% end %>
+  <% else %>
+    <p>You don’t have any recipes yet.</p>
+    <%= link_to "New recipe", new_recipe_path %>
   <% end %>
-<% else %>
-  <p>You don’t have any recipes yet.</p>
-  <%= link_to "New recipe", new_recipe_path %>
-<% end %>
+</div>

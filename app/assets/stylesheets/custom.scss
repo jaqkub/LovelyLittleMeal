@@ -17,6 +17,12 @@ html, body {
   display: none !important;
 }
 
+// Hide navbar items while maintaining navbar height (for when user is not logged in)
+.navbar-nav.hidden-preserve-space {
+  visibility: hidden;
+  pointer-events: none;
+}
+
 // Chat message bubbles styling
 .message-item {
   // Animation for slide-up and fade-in

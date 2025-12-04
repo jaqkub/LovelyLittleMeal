@@ -2,7 +2,7 @@
   <div class="container-fluid">
 
     <!-- Just to push nav items and hamburger button to the right -->
-    <a class="navbar-brand"></a> 
+    <div class="navbar-brand"></div> 
 
     <!-- Hamburger (mobile only) -->
     <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNav">
@@ -11,7 +11,7 @@
 
     <!-- Desktop links – visible only ≥lg -->
     <div class="d-none d-lg-block">
-      <ul class="navbar-nav">
+      <ul class="navbar-nav <%= 'hidden-preserve-space' unless user_signed_in? %>">
         <%= render "shared/navbar_items" %>
       </ul>
     </div>
@@ -32,7 +32,7 @@
     <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
   </div>
   <div class="offcanvas-body">
-      <ul class="navbar-nav text-end">
+      <ul class="navbar-nav text-end <%= 'hidden-preserve-space' unless user_signed_in? %>">
         <%= render "shared/navbar_items" %>
       </ul>
   </div>
