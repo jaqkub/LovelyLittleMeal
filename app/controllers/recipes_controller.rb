@@ -63,6 +63,19 @@ class RecipesController < ApplicationController
     redirect_to recipe_path(@recipe), alert: "Failed to send message: #{e.message}"
   end
 
+  def toggle_favorite
+    @recipe = current_user.recipes.find(params[:id])
+    @recipe.update(favorite: !@recipe.favorite)
+
+    respond_to do |format|
+      format.turbo_stream
+      format.html do
+        redirect_back fallback_location: recipe_path(@recipe),
+                      notice: (@recipe.favorite? ? "Added to favorites" : "Removed from favorites")
+      end
+    end
+  end
+
   private
 
   def set_recipe

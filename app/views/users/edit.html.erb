@@ -2,7 +2,7 @@
   <div class="row justify-content-center">
     <div class="col-12 col-md-8 col-lg-6">
 
-      <div class="card shadow-sm p-4">
+      <div id="user-settings-edit", class="card shadow-sm p-4" >
         <h2 class="mb-4 text-center">Edit your settings to get the best tips from the chef</h2>
 
         <%= form_with model: @user, url: "/settings", method: :patch do |f| %>

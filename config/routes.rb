@@ -17,6 +17,7 @@ Rails.application.routes.draw do
     # Creates: POST /recipes/:id/message
     member do
       post :message  # POST /recipes/:id/message - send chat message
+      patch :toggle_favorite  # To toggle favorites
     end
   end
 
