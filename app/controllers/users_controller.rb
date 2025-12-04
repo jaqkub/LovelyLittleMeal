@@ -19,9 +19,9 @@ before_action :authenticate_user!
     end
 
     # physicals
-    if permitted[:physicals].is_a?(ActionController::Parameters)
-      permitted[:physicals] = permitted[:physicals].to_unsafe_h
-    end
+    #if permitted[:physicals].is_a?(ActionController::Parameters)
+    #  permitted[:physicals] = permitted[:physicals].to_unsafe_h
+    #end
 
     if @user.update(permitted)
       redirect_to recipes_path, notice: "Settings updated"
@@ -36,7 +36,10 @@ before_action :authenticate_user!
     params.require(:user).permit(
       :preferences,
       :system_prompt,
-      physicals: {},
+      #physicals: {},
+      :age,
+      :weight,
+      :gender,
       allergies: [],
       appliances: []
     )

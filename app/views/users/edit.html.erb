@@ -82,51 +82,40 @@
           </div>
 
           <!-- Physicals (age, weight, gender) -->
-          <h5 class="mt-4 mb-2">Physical Information</h5>
+            <h5 class="mt-4 mb-2">Physical Information</h5>
 
-          <% physicals_hash =
-               if @user.physicals.is_a?(Hash)
-                 @user.physicals
-               else
-                 {}
-               end %>
+            <!-- Age -->
+            <div class="mb-3">
+              <%= f.label :age, "Age", class: "form-label" %>
+              <%= f.number_field :age,
+                    class: "form-control",
+                    placeholder: "E.g. 32" %>
+            </div>
 
-          <!-- Age -->
+            <!-- Weight -->
+            <div class="mb-3">
+              <%= f.label :weight, "Weight (kg)", class: "form-label" %>
+              <%= f.number_field :weight,
+                    class: "form-control",
+                    placeholder: "E.g. 68" %>
+            </div>
+
+            <!-- Gender (boolean: true = male, false = female) -->
           <div class="mb-3">
-            <%= label_tag "user[physicals][age]", "Age", class: "form-label" %>
-            <%= text_field_tag "user[physicals][age]",
-                  physicals_hash["age"],
-                  class: "form-control",
-                  placeholder: "E.g. 32" %>
-          </div>
-
-          <!-- Weight -->
-          <div class="mb-3">
-            <%= label_tag "user[physicals][weight]", "Weight (kg)", class: "form-label" %>
-            <%= text_field_tag "user[physicals][weight]",
-                  physicals_hash["weight"],
-                  class: "form-control",
-                  placeholder: "E.g. 68" %>
-          </div>
-
-          <!-- Gender -->
-          <div class="mb-3">
-            <%= label_tag "user[physicals][gender]", "Gender", class: "form-label d-block" %>
+            <%= f.label :gender, "Gender", class: "form-label d-block" %>
 
             <div class="form-check form-check-inline">
-              <%= radio_button_tag "user[physicals][gender]", "male",
-                    physicals_hash["gender"] == "male",
-                    class: "form-check-input",
-                    id: "physicals_gender_male" %>
-              <%= label_tag "physicals_gender_male", "Male", class: "form-check-label" %>
+              <%= f.radio_button :gender, true,
+                    id: "user_gender_male",
+                    class: "form-check-input" %>
+              <%= label_tag "user_gender_male", "Male", class: "form-check-label" %>
             </div>
 
             <div class="form-check form-check-inline">
-              <%= radio_button_tag "user[physicals][gender]", "female",
-                    physicals_hash["gender"] == "female",
-                    class: "form-check-input",
-                    id: "physicals_gender_female" %>
-              <%= label_tag "physicals_gender_female", "Female", class: "form-check-label" %>
+              <%= f.radio_button :gender, false,
+                    id: "user_gender_female",
+                    class: "form-check-input" %>
+              <%= label_tag "user_gender_female", "Female", class: "form-check-label" %>
             </div>
           </div>
 
