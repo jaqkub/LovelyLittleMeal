@@ -3,7 +3,7 @@
   <div class="overflow-y-auto flex-grow-1" style="min-height: 0; max-height: 100%;">
     <% if @recipes.any? %>
       <% @recipes.each do |recipe| %>
-        <div class="mb-3 pb-3 border-bottom d-flex justify-content-between align-items-start">
+        <div class="recipe-card mb-3 pb-3 border-bottom d-flex justify-content-between align-items-start">
           <div class="flex-grow-1">
             <%= link_to recipe_path(recipe), class: "text-decoration-none text-dark", data: { turbo_prefetch: false } do %>
               <h3 class="h5 mb-1"><%= recipe.title || "Untitled Recipe" %></h3>
