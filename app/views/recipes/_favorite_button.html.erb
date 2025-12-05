@@ -1,0 +1,8 @@
+<span id="favorite-toggle-<%= recipe.id %>">
+  <%= button_to toggle_favorite_recipe_path(recipe),
+                method: :patch,
+                class: "btn p-0 border-0 bg-transparent",
+                form_class: "d-inline" do %>
+    <i class="bi <%= recipe.favorite? ? 'bi-star-fill text-warning' : 'bi-star' %> fs-3"></i>
+  <% end %>
+</span>

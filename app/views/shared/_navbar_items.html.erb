@@ -1,12 +1,23 @@
 <li class="nav-item">
-  <%= link_to "Recipes", recipes_path, class: "nav-link", data: { turbo_prefetch: false } %>
+  <%= link_to "New Recipe", new_recipe_path,
+      class: "btn btn-primary navbar-big-button",
+      data: { turbo_prefetch: false } %>
 </li>
+
 <li class="nav-item">
-  <%= link_to "New Recipe", new_recipe_path, class: "nav-link fw-bold", data: { turbo_prefetch: false } %>
+  <%= link_to "Recipes", recipes_path,
+      class: "nav-link navbar-big-item",
+      data: { turbo_prefetch: false } %>
 </li>
+
 <li class="nav-item">
-  <%= link_to "Settings", "/settings/edit", class: "nav-link", data: { turbo_prefetch: false } %>
+  <%= link_to "Settings", "/settings/edit",
+      class: "nav-link navbar-big-item",
+      data: { turbo_prefetch: false } %>
 </li>
+
 <li class="nav-item">
-  <%= link_to "Log out", destroy_user_session_path, data: {turbo_method: :delete}, class: "nav-link" %>
+  <%= link_to "Log out", destroy_user_session_path,
+      class: "nav-link navbar-big-item",
+      data: { turbo_method: :delete } %>
 </li>
