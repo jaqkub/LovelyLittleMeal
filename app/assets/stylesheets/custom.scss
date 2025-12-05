@@ -238,33 +238,32 @@ html, body {
 
 // Chat messages scrollbar styling
 #chat-messages {
-  // Ensure scrolling works properly even with justify-content: flex-end
-  // When content is short, it's pushed to bottom; when it overflows, scrolling works
+  // Flexbox container for messages
+  // Spacer div (#messages-spacer) pushes messages to bottom when content is short
+  // When content overflows, spacer shrinks and scrolling works normally
+  // This approach avoids justify-content: flex-end which interferes with scrolling
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
   
-  // Custom scrollbar styling for Firefox
-  scrollbar-width: thin;
-  scrollbar-color: rgba(39, 39, 39, 0.25) #ffffff; // Match input focus glow color
+  // Enable scrolling - critical for scroll functionality
+  overflow-y: auto;
+  overflow-x: hidden;
   
-  // Custom scrollbar styling for Webkit browsers (Chrome, Safari, Edge)
+  // Ensure smooth scrolling on mobile devices
+  -webkit-overflow-scrolling: touch;
+  
+  // Hide scrollbar for Firefox while keeping scrolling functional
+  scrollbar-width: none;
+  
+  // Hide scrollbar for Webkit browsers (Chrome, Safari, Edge) while keeping scrolling functional
+  // Using width: 0 instead of display: none to ensure scrolling still works
   &::-webkit-scrollbar {
-    width: 8px;
+    width: 0;
+    height: 0;
+    background: transparent;
   }
   
-  &::-webkit-scrollbar-track {
-    background: #ffffff;
-    border-radius: 4px;
-  }
-  
-  &::-webkit-scrollbar-thumb {
-    background: rgba(39, 39, 39, 0.25); // Match input focus glow color (#272727 with 25% opacity)
-    border-radius: 4px;
-    
-    &:hover {
-      background: rgba(39, 39, 39, 0.4); // Slightly darker on hover
-    }
-  }
+  // Ensure scrolling still works on all browsers
+  -ms-overflow-style: none;
 }
 

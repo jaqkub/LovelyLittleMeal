@@ -5,10 +5,16 @@
 <% end %>
 
 <% right_content = capture do %>
-  <div id="chat-messages" class="overflow-y-auto flex-grow-1 mb-3 d-flex flex-column" style="min-height: 0; justify-content: flex-end;" data-chat-target="messages">
+  <div id="chat-messages" class="overflow-y-auto flex-grow-1 mb-3 d-flex flex-column" style="min-height: 0; max-height: 100%;" data-chat-target="messages">
+    <%# Spacer that grows to push messages to bottom when content is short %>
+    <%# When content overflows, this spacer shrinks to 0 and scrolling works normally %>
+    <%# Only show spacer when there are messages (empty message handles its own centering) %>
+    <% if @messages.any? %>
+      <div id="messages-spacer" style="flex: 1 1 0; min-height: 0;"></div>
+    <% end %>
     <%# Initial messages or empty state %>
     <% if @messages.any? %>
-      <%= render @messages %>
+      <%= render @messages %> 
     <% else %>
       <div id="empty-chat-message" class="d-flex align-items-center justify-content-center flex-grow-1">
         <p class="text-muted mb-0">What are we cooking today?</p>
