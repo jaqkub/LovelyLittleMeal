@@ -49,9 +49,33 @@
         <div class="row g-3">
           <% @recipes.each do |recipe| %>
             <div class="col-12 col-md-6 col-lg-4">
-              <div class="card h-100">
+              <div class="recipe-card h-100">
 
-                <div class="card-body d-flex flex-column">
+                <%# Recipe Image at top of card %>
+                <div class="recipe-card-image">
+                  <% if recipe.image.attached? %>
+                    <%= image_tag rails_blob_path(recipe.image),
+                                  alt: "#{recipe.title} image",
+                                  class: "recipe-card-img" %>
+                  <% elsif recipe.content.present? && recipe.content.is_a?(Hash) && recipe.content.any? %>
+                    <%# Loading placeholder for image generation %>
+                    <div class="recipe-card-img-placeholder">
+                      <div class="text-center text-muted">
+                        <div class="spinner-border spinner-border-sm mb-2" role="status" aria-hidden="true">
+                          <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mb-0 small">Generating image...</p>
+                      </div>
+                    </div>
+                  <% else %>
+                    <%# Placeholder when no image and no content yet %>
+                    <div class="recipe-card-img-placeholder">
+                      <i class="bi bi-image fs-1 text-muted"></i>
+                    </div>
+                  <% end %>
+                </div>
+
+                <div class="recipe-card-body d-flex flex-column">
                   <%= link_to recipe_path(recipe),
                               class: "text-decoration-none text-dark mb-2",
                               data: { turbo_prefetch: false, turbo_frame: "_top" } do %>
@@ -69,7 +93,7 @@
                   <% end %>
                 </div>
 
-                <div class="card-footer d-flex justify-content-end gap-3">
+                <div class="recipe-card-footer d-flex justify-content-end gap-3">
                   <%= render "recipes/favorite_button", recipe: recipe %>
 
                   <%= button_to recipe_path(recipe),
