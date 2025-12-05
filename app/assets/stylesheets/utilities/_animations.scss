@@ -1,0 +1,61 @@
+// Animation utilities
+// Reusable keyframe animations used throughout the application
+
+// Keyframe animation for slide-up and fade-in effect
+// Used for chat messages appearing
+@keyframes slideUpFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Keyframe animation for slide in from right to left
+// Used for recipe details updates
+@keyframes slideInFromRight {
+  // Simple slide in from right to left
+  from {
+    opacity: 0;
+    transform: translateX(50px); // Start from right
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0); // Slide to normal position
+  }
+}
+
+// Keyframe animation for anime glasses shine effect
+// Silvery highlight sweeps diagonally across the button in a single pass (right to left)
+// Slower sweep (40% of cycle) but same frequency - takes longer to cross but still repeats every 5s
+// Start position completely off-screen to ensure no visible shine in default state
+// Then instantly resets to start position for next cycle (no reverse movement)
+@keyframes animeShine {
+  0% {
+    background-position: 400% 400%;
+  }
+  40% {
+    background-position: -400% -400%;
+  }
+  40.01% {
+    background-position: 400% 400%;
+  }
+  100% {
+    background-position: 400% 400%;
+  }
+}
+
+// Keyframe animation for border glow effect
+// Silvery glow moves through the border from right to left in a continuous loop
+@keyframes borderGlow {
+  0% {
+    background-position: 300% 0;
+  }
+  100% {
+    background-position: -300% 0;
+  }
+}
+

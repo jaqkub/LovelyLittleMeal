@@ -1,0 +1,26 @@
+// Navbar layout styles
+// Styles specific to the navigation bar component
+
+#navbar {
+  background-color: #F4F4F4 !important;
+}
+
+.navbar-logo {
+  display: block;
+  max-height: 56px;      // controls navbar height
+  width: auto;           // keep aspect ratio
+  max-width: 50vw;       // at most half the viewport width
+  object-fit: contain;   // never crop
+}
+
+.navbar-big-item {
+  font-size: 1.4rem !important;     // 2× larger
+  padding: 0.5rem 0.75rem !important;
+}
+
+// Hide navbar items while maintaining navbar height (for when user is not logged in)
+.navbar-nav.hidden-preserve-space {
+  visibility: hidden;
+  pointer-events: none;
+}
+
