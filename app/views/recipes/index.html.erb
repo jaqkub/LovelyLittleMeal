@@ -10,31 +10,32 @@
     <div class="d-flex align-items-center">
 
       <!-- SEARCH FIELD -->
-      <div class="input-group flex-grow-1" style="max-width: 700px;">
+      <div class="d-flex gap-2 align-items-center flex-grow-1" style="max-width: 700px;">
         <%= text_field_tag :query,
                            params[:query],
-                           class: "form-control",
+                           id: "recipe-search-input",
+                           class: "form-control flex-grow-1",
                            placeholder: "Search your recipes...",
-                           style: "padding: 8px 10px;",
                            oninput: "this.form.requestSubmit()" %>
 
-        <button class="btn btn-dark ms-2 px-3 rounded-3" type="submit">
+        <button class="btn btn-primary flex-shrink-0" type="submit" id="recipe-search-button">
           Search
         </button>
-      </div>
 
-      <!-- FAVORITES CHECKBOX -->
-      <div class="form-check ms-auto d-flex align-items-center">
-        <%= check_box_tag :favorites,
-                          "1",
-                          params[:favorites] == "1",
-                          class: "form-check-input",
-                          onchange: "this.form.requestSubmit()" %>
+        <!-- FAVORITES CHECKBOX -->
+        <div class="form-check d-flex align-items-center flex-shrink-0" id="favorites-checkbox-container">
+          <%= check_box_tag :favorites,
+                            "1",
+                            params[:favorites] == "1",
+                            class: "form-check-input",
+                            id: "favorites-checkbox",
+                            onchange: "this.form.requestSubmit()" %>
 
-        <%= label_tag :favorites,
-                      "Show favorites only",
-                      class: "form-check-label",
-                      style: "font-size: 1rem; margin-left: 0.35rem;" %>
+          <%= label_tag :favorites,
+                        "Show favorites only",
+                        class: "form-check-label",
+                        for: "favorites-checkbox" %>
+        </div>
       </div>
 
     </div>
