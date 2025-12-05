@@ -87,18 +87,26 @@ end
     # Only update recipe if the LLM explicitly marked it as modified
     # The recipe_modified field tells us if the recipe data was actually changed
     # Default to true if not present (better to update unnecessarily than miss an update)
-    recipe_data = response.except("message", "recipe_modified")
+    recipe_data = response.except("message", "recipe_modified", "change_magnitude")
     recipe_modified = response["recipe_modified"]
+    change_magnitude = response["change_magnitude"]&.downcase
     @recipe_changed = recipe_modified.nil? || recipe_modified == true || recipe_modified == "true"
     if @recipe_changed
       @recipe.update!(recipe_data)
       @recipe.reload
       
-      # Generate image asynchronously in the background
-      # This allows the request to return immediately while image generation happens in parallel
-      # Multiple image generation jobs can run concurrently, enabling parallelization
-      # Only generate if image doesn't already exist (idempotency)
-      RecipeImageGenerationJob.perform_later(@recipe.id) unless @recipe.image.attached?
+      # Determine if image regeneration is needed
+      # Regenerate if: no image exists OR change is significant (e.g., meat dish -> chocolate fudges)
+      # Significant changes require new images to accurately represent the completely different recipe
+      requires_regeneration = !@recipe.image.attached? || change_magnitude == "significant"
+      
+      if requires_regeneration
+        # Generate image asynchronously in the background
+        # This allows the request to return immediately while image generation happens in parallel
+        # Multiple image generation jobs can run concurrently, enabling parallelization
+        # Pass force_regenerate flag if image exists but change is significant
+        RecipeImageGenerationJob.perform_later(@recipe.id, { force_regenerate: @recipe.image.attached? })
+      end
     end
 
     respond_to do |format|
@@ -431,6 +439,10 @@ end
       - Make ONLY the changes the user requested
       - Update the recipe fields (title, description, content, shopping_list) with the modified recipe
       - Set recipe_modified: true (CRITICAL: Set to true because you ARE modifying the recipe)
+      - Set change_magnitude appropriately:
+        * Use "significant" if the recipe has changed substantially (e.g., completely different dish type like meat dish → chocolate fudges, major ingredient category changes, recipe type changed from savory to sweet or vice versa, complete recipe replacement)
+        * Use "minor" for small adjustments (e.g., adding/removing one ingredient, adjusting quantities, minor modifications that don't change the fundamental nature of the dish)
+        * Use "none" only if no changes were made (should not happen if recipe_modified is true)
       - Then proceed through the recipe processing checklist (allergies, preferences, appliances, etc.)
 
       ============================================================================
@@ -448,6 +460,14 @@ end
       → Modify recipe to include chocolate chips
       → Update recipe data with the change
       → Set recipe_modified: true
+      → Set change_magnitude: "minor" (adding one ingredient doesn't fundamentally change the dish)
+
+      User: "I want a completely new recipe - chocolate fudges"
+      → This is a CHANGE REQUEST (Category B)
+      → Completely replace the recipe with chocolate fudges
+      → Update recipe data with the new recipe
+      → Set recipe_modified: true
+      → Set change_magnitude: "significant" (completely different dish type requires new image)
 
       User: "what can I use instead of soy milk?"
       → This is a QUESTION (Category A)

@@ -19,13 +19,22 @@ class RecipeImageGenerationJob < ApplicationJob
   # This method is called by ActiveJob when the job is executed
   #
   # @param recipe_id [Integer] The ID of the recipe to generate an image for
-  # @param options [Hash] Optional parameters for image generation (size, quality, style, model)
+  # @param options [Hash] Optional parameters for image generation (size, quality, style, model, force_regenerate)
   def perform(recipe_id, options = {})
     recipe = Recipe.find(recipe_id)
 
-    # Skip if image already exists (idempotency)
-    # This prevents regenerating images unnecessarily
-    return if recipe.image.attached?
+    # Skip if image already exists and regeneration is not forced
+    # This prevents regenerating images unnecessarily for minor changes
+    # force_regenerate: true allows regeneration even if image exists (for significant recipe changes)
+    if recipe.image.attached? && !options.fetch(:force_regenerate, false)
+      return
+    end
+
+    # If forcing regeneration, purge the old image first
+    # This ensures we don't accumulate old images and the new image replaces the old one
+    if options.fetch(:force_regenerate, false) && recipe.image.attached?
+      recipe.image.purge
+    end
 
     # Build a descriptive prompt from the recipe data
     # The prompt is constructed from title, description, and key ingredients
@@ -93,12 +102,14 @@ class RecipeImageGenerationJob < ApplicationJob
 
     # Build a rich prompt for food photography
     # Include title, description, and key ingredients for accuracy
+    # CRITICAL: Never add any text on the image - this ensures clean food photography
     prompt_parts = [
       "Professional food photography of",
       title,
       description.present? ? ", #{description.downcase}" : "",
       ingredients.any? ? ". Featuring #{ingredients.first(3).join(', ')}" : "",
-      ". High quality, appetizing, well-lit, restaurant style food photography"
+      ". High quality, appetizing, well-lit, restaurant style food photography",
+      ". CRITICAL: Do not add any text, labels, or words on the image - only the food itself"
     ]
 
     prompt_parts.join(" ").strip
