@@ -236,6 +236,36 @@ html, body {
   }
 }
 
+// Recipes list scrollbar styling - matches recipe-details scrollbar
+#recipes-list-scrollable {
+  // Ensure the container can scroll
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  // Custom scrollbar styling for Firefox
+  scrollbar-width: thin;
+  scrollbar-color: rgba(39, 39, 39, 0.25) #ffffff; // Match input focus glow color
+
+  // Custom scrollbar styling for Webkit browsers (Chrome, Safari, Edge)
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #ffffff;
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(39, 39, 39, 0.25); // Match input focus glow color (#272727 with 25% opacity)
+    border-radius: 4px;
+    
+    &:hover {
+      background: rgba(39, 39, 39, 0.4); // Slightly darker on hover
+    }
+  }
+}
+
 // Chat messages scrollbar styling
 #chat-messages {
   // Flexbox container for messages
