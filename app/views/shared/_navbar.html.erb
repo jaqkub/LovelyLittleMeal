@@ -1,5 +1,5 @@
-<nav id="navbar", class="navbar navbar-expand-lg bg-white position-relative overflow-hidden">
-  <div class="container-fluid">
+<nav id="navbar" class="navbar navbar-expand-lg bg-white position-relative overflow-hidden py-4">
+  <div class="container-fluid d-flex align-items-center justify-content-end">
 
     <!-- Just to push nav items and hamburger button to the right -->
     <div class="navbar-brand"></div>
@@ -11,7 +11,7 @@
 
     <!-- Desktop links – visible only ≥lg -->
     <div class="d-none d-lg-block">
-      <ul class="navbar-nav <%= 'hidden-preserve-space' unless user_signed_in? %>">
+      <ul class="navbar-nav d-flex align-items-center <%= 'hidden-preserve-space' unless user_signed_in? %>">
         <%= render "shared/navbar_items" %>
       </ul>
     </div>
@@ -19,11 +19,16 @@
   </div>
 
   <!-- Logo – clickable and goes to root -->
-  <%= link_to root_path,
-      class: "position-absolute top-50 start-50 translate-middle text-nowrap",
-      style: "pointer-events: auto; z-index: 0; text-decoration: none; color: inherit;" do %>
-    <h1 class="m-0 fs-2">LovelyLittleMeal</h1>
-  <% end %>
+<%= link_to root_path,
+      class: "position-absolute top-50 start-50 translate-middle",
+      style: "pointer-events: auto; z-index: 0; text-decoration: none;" do %>
+  <%= image_tag(
+        "https://res.cloudinary.com/dao1vxhsu/image/upload/v1764934638/logo_no_background_aszsab.png",
+        alt: "LovelyLittleMeal",
+        class: "navbar-logo"
+      ) %>
+<% end %>
+
 </nav>
 
 <!-- Offcanvas drawer (mobile only) -->
@@ -32,8 +37,8 @@
     <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
   </div>
   <div class="offcanvas-body">
-      <ul class="navbar-nav text-end <%= 'hidden-preserve-space' unless user_signed_in? %>">
-        <%= render "shared/navbar_items" %>
-      </ul>
+    <ul class="navbar-nav text-end <%= 'hidden-preserve-space' unless user_signed_in? %>">
+      <%= render "shared/navbar_items" %>
+    </ul>
   </div>
 </div>
