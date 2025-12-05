@@ -50,18 +50,17 @@ class RecipesController < ApplicationController
     @recipes = current_user.recipes
                            .order(favorite: :desc, created_at: :desc)
 
-  if params[:query].present?
-    @recipes = @recipes.where(
-      "recipes.title ILIKE :q OR recipes.description ILIKE :q",
-      q: "%#{params[:query]}%"
-    )
-  end
+    if params[:query].present?
+      @recipes = @recipes.where(
+        "recipes.title ILIKE :q OR recipes.description ILIKE :q",
+        q: "%#{params[:query]}%"
+      )
+    end
 
-  if params[:favorites] == "1"
+    return unless params[:favorites] == "1"
+
     @recipes = @recipes.where(favorite: true)
   end
-
-end
 
   def message
     @chat = @recipe.chat
@@ -94,14 +93,14 @@ end
     if @recipe_changed
       @recipe.update!(recipe_data)
       @recipe.reload
-      
+
       # Determine if image regeneration is needed
       # Regenerate if: no image exists OR change is significant (any ingredient change, not just quantities)
       # Significant changes require new images to accurately represent the different recipe
       # Quantity-only changes (minor) don't require regeneration
       requires_regeneration = !@recipe.image.attached? || change_magnitude == "significant"
       @image_regenerating = requires_regeneration && @recipe.image.attached?
-      
+
       if requires_regeneration
         # Generate image asynchronously in the background
         # This allows the request to return immediately while image generation happens in parallel
@@ -236,7 +235,7 @@ end
       1. Start with an encouraging, friendly introduction about the recipe
       2. If you made actual adjustments, mention them factually and specifically
       3. End with an encouraging note about enjoying the recipe
-      4. Add a line break, then add: "Tell me what to change next"
+      4. Add a line break, then add: "Let me know if you need any adjustments!"
 
       Rules for mentioning adjustments (ONLY mention if you actually made changes):
       - If you removed or substituted allergy ingredients FROM THE ORIGINAL RECIPE: State which ingredients were avoided and what substitutes were used (e.g., "I've removed [allergen ingredient] and used [substitute] instead to keep it safe for you")
@@ -428,7 +427,7 @@ end
       - Do NOT go through recipe processing checklist
       - Do NOT check allergies, preferences, or appliances (recipe is already set)
       - Your message should ONLY answer their question in a warm, encouraging chef persona
-      - End with a line break and "Tell me what to change next"
+      - End with a line break and "Let me know if you need any adjustments!"
       - CRITICAL: Copy the recipe data EXACTLY as shown above - do not recreate or modify it
       - CRITICAL: Set recipe_modified to false - you are answering a question, not modifying the recipe
 
