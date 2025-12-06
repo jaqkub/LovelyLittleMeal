@@ -1,5 +1,5 @@
 require_relative "base_tool"
-require_relative "errors"
+require_relative "error_classes"
 
 # Validates that allergen warnings are present and correctly formatted in recipe instructions
 # This tool addresses the critical issue where allergen warnings sometimes don't appear
