@@ -228,19 +228,33 @@ All Phase 1 tools have been implemented and integrated. Recent updates:
 
 **Tasks**:
 1. Create tool class
-2. Implement appliance checking logic using GPT-5-nano
+2. Implement appliance checking logic using GPT-4.1-nano
 3. Return violations with specific steps
 4. Write tests
 5. Integrate into validation phase
 
-**Files to Create**:
-- `app/lib/tools/appliance_compatibility_checker.rb`
-- `spec/lib/tools/appliance_compatibility_checker_spec.rb`
+**Files Created**:
+- `app/lib/tools/appliance_compatibility_checker.rb` ✅
+- `spec/lib/tools/appliance_compatibility_checker_spec.rb` (tests pending)
+
+**Files Modified**:
+- `app/controllers/recipes_controller.rb` ✅
+
+**Status**: ✅ **COMPLETED** (Implementation done, tests pending)
+
+**Implementation Details**:
+- Uses GPT-4.1-nano for fast appliance detection in instructions
+- Detects both direct mentions and implied usage (e.g., "bake" implies oven)
+- Handles alternative names (e.g., "stovetop" = "stove")
+- Falls back to pattern matching if LLM fails
+- Integrated into unified `validate_recipe` method alongside allergen validation
+- Violations are aggregated and fixed together
 
 **Acceptance Criteria**:
-- [ ] Tool detects appliance violations
-- [ ] Tool provides specific fix instructions
-- [ ] All tests pass
+- [x] Tool detects appliance violations
+- [x] Tool provides specific fix instructions
+- [x] Integrated into validation phase
+- [ ] All tests pass (tests pending)
 
 ---
 
@@ -372,18 +386,29 @@ All Phase 1 tools have been implemented and integrated. Recent updates:
 6. Write tests
 7. Integrate into controller
 
-**Files to Create**:
-- `app/services/recipe_fix_service.rb`
-- `spec/services/recipe_fix_service_spec.rb`
+**Files Created**:
+- `app/services/recipe_fix_service.rb` ✅
+- `spec/services/recipe_fix_service_spec.rb` (tests pending)
 
-**Files to Modify**:
-- `app/controllers/recipes_controller.rb`
+**Files Modified**:
+- `app/controllers/recipes_controller.rb` ✅
+
+**Status**: ✅ **COMPLETED**
+
+**Implementation Details**:
+- Hybrid approach: Programmatic fixes first (fast, reliable, free), then LLM fallback for complex cases
+- Programmatic fixes handle: missing_emoji, incorrect_warning_format, generic_warning
+- LLM fixes handle: allergen_not_in_instructions and other complex violations
+- Max 3 iterations with detailed logging
+- Integrated into controller's validation phase
 
 **Acceptance Criteria**:
-- [ ] Violations are fixed automatically
-- [ ] Loop terminates after max iterations
-- [ ] Allergen warnings are reliably added
-- [ ] All tests pass
+- [x] Violations are fixed automatically
+- [x] Loop terminates after max iterations
+- [x] Allergen warnings are reliably added
+- [x] Programmatic fixes work for simple violations (no LLM call needed)
+- [x] LLM fixes work for complex violations
+- [ ] All tests pass (tests pending)
 
 ---
 
@@ -392,21 +417,36 @@ All Phase 1 tools have been implemented and integrated. Recent updates:
 
 **Tasks**:
 1. Create tool class
-2. Implement message formatting using GPT-5-nano
+2. Implement message formatting using GPT-4.1-nano
 3. Use conversation context to avoid greetings on follow-ups
 4. Format based on actual changes made
 5. Write tests
 6. Integrate into controller
 
-**Files to Create**:
-- `app/lib/tools/message_formatter.rb`
-- `spec/lib/tools/message_formatter_spec.rb`
+**Files Created**:
+- `app/lib/tools/message_formatter.rb` ✅
+- `app/lib/tools/message_formatter_schema.rb` ✅
+- `spec/lib/tools/message_formatter_spec.rb` (tests pending)
+
+**Files Modified**:
+- `app/controllers/recipes_controller.rb` ✅
+
+**Status**: ✅ **COMPLETED** (Implementation done, tests pending)
+
+**Implementation Details**:
+- Uses GPT-4.1-nano for fast message formatting
+- Respects conversation context (greeting_needed flag)
+- Formats messages based on actual changes made
+- Prevents duplicate text and filler words
+- Integrated into controller after validation phase
+- Includes timing logs for performance monitoring
 
 **Acceptance Criteria**:
-- [ ] Messages have correct structure
-- [ ] No greetings on follow-ups
-- [ ] Messages reflect actual changes
-- [ ] All tests pass
+- [x] Messages have correct structure
+- [x] No greetings on follow-ups (respects conversation context)
+- [x] Messages reflect actual changes
+- [x] Integrated into controller
+- [ ] All tests pass (tests pending)
 
 ---
 

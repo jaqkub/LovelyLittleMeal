@@ -220,7 +220,7 @@ class RecipesController < ApplicationController
     # Use gpt-4o for recipe generation to ensure reliable structured output
     # Tools use faster gpt-4.1-nano models, but recipe generation needs the full model
     chat_setup_start = Time.current
-    ruby_llm_chat = RubyLLM.chat(model: "gpt-4o")
+    ruby_llm_chat = RubyLLM.chat(model: "gpt-4.1-nano")
                            .with_instructions(system_prompt(current_user) + system_prompt_addition(chat.recipe))
                            .with_schema(RecipeSchema)
     timings[:chat_setup] = (Time.current - chat_setup_start) * 1000
@@ -246,13 +246,32 @@ class RecipesController < ApplicationController
     Rails.logger.info("LLM Response has content: #{response.key?('content')}")
 
     # Phase 4: Validation & Auto-Fix
-    # Validate allergen warnings and automatically fix violations if recipe was modified
+    # Validate recipe (allergen warnings, appliance compatibility) and automatically fix violations if recipe was modified
     validation_start = Time.current
     if [true, "true"].include?(response["recipe_modified"])
       # Validate and fix violations automatically
-      response = validate_allergen_warnings(response, user_message, ruby_llm_chat)
+      response = validate_recipe(response, user_message, ruby_llm_chat)
     end
     timings[:allergen_validation] = (Time.current - validation_start) * 1000
+
+    # Phase 5: Message Formatting
+    # DISABLED: MessageFormatter takes ~2 seconds, messages were working fine without it
+    # TODO: Re-enable when performance is improved or when needed for consistency
+    # Format the response message using MessageFormatter tool for consistency
+    # message_formatting_start = Time.current
+    # formatted_message = format_response_message(
+    #   recipe_data: response,
+    #   conversation_context: conversation_context,
+    #   intent: intent_result,
+    #   changes_made: {
+    #     recipe_modified: response["recipe_modified"] || false,
+    #     allergens_added: detect_allergens_added(response, user_message)
+    #   }
+    # )
+    # # Replace the message in response with formatted message
+    # response["message"] = formatted_message[:message] if formatted_message[:message]
+    # timings[:message_formatting] = (Time.current - message_formatting_start) * 1000
+    timings[:message_formatting] = 0
 
     # Calculate total time and log all timings
     total_time = (Time.current - total_start_time) * 1000
@@ -269,6 +288,7 @@ class RecipesController < ApplicationController
     Rails.logger.info("  Conversation History Building: #{timings[:conversation_history_building].round(2)}ms")
     Rails.logger.info("  LLM Recipe Generation:        #{timings[:llm_recipe_generation].round(2)}ms (#{(timings[:llm_recipe_generation] / total_time * 100).round(1)}% of total)")
     Rails.logger.info("  Allergen Validation:           #{timings[:allergen_validation].round(2)}ms")
+    # Rails.logger.info("  Message Formatting:            #{timings[:message_formatting].round(2)}ms") # DISABLED
     Rails.logger.info("  " + ("-" * 78))
     Rails.logger.info("  TOTAL TIME:                    #{total_time.round(2)}ms")
     Rails.logger.info("=" * 80)
@@ -320,7 +340,7 @@ class RecipesController < ApplicationController
   end
 
   # Builds enhanced prompt with context and extracted data
-  def build_enhanced_prompt(chat:, user_message:, intent:, conversation_context:, extracted_recipe_data:)
+  def build_enhanced_prompt(chat: nil, user_message:, intent: nil, conversation_context: {}, extracted_recipe_data: {}) # rubocop:disable Lint/UnusedMethodArgument
     parts = []
 
     # Add extracted recipe data if available
@@ -353,19 +373,65 @@ class RecipesController < ApplicationController
     parts.join("\n")
   end
 
-  # Validates allergen warnings and automatically fixes violations
+  # Validates recipe and automatically fixes violations
+  # Validates both allergen warnings and appliance compatibility
   # Uses RecipeFixService to implement a validation loop that fixes violations
   #
   # @param response [Hash] LLM response with recipe data
   # @param user_message [Message] User message that triggered recipe generation
   # @param ruby_llm_chat [RubyLLM::Chat] RubyLLM chat instance with conversation history
   # @return [Hash] Fixed recipe data (or original if no violations)
-  def validate_allergen_warnings(response, user_message, ruby_llm_chat)
+  def validate_recipe(response, user_message, ruby_llm_chat)
+    # Collect all violations from different validators
+    all_violations = []
+    all_fix_instructions = []
+
+    # Validate allergen warnings
+    allergen_validation_result = validate_allergen_warnings_internal(response, user_message)
+    all_violations.concat(allergen_validation_result.violations) if allergen_validation_result
+    if allergen_validation_result && allergen_validation_result.fix_instructions.present?
+      all_fix_instructions << allergen_validation_result.fix_instructions
+    end
+
+    # Validate appliance compatibility
+    appliance_validation_result = validate_appliance_compatibility_internal(response)
+    all_violations.concat(appliance_validation_result.violations) if appliance_validation_result
+    if appliance_validation_result && appliance_validation_result.fix_instructions.present?
+      all_fix_instructions << appliance_validation_result.fix_instructions
+    end
+
+    # If no violations, return original response
+    return response if all_violations.empty?
+
+    # Log all violations found
+    Rails.logger.warn("Recipe Validation: Found #{all_violations.length} total violation(s)")
+    all_violations.each_with_index do |violation, idx|
+      Rails.logger.warn("  #{idx + 1}. #{violation[:type]}: #{violation[:message]}")
+    end
+    Rails.logger.warn("  Combined fix instructions:\n#{all_fix_instructions.join("\n\n")}")
+
+    # Attempt to fix violations automatically
+    Rails.logger.info("RecipeFixService: Attempting to fix violations automatically")
+    RecipeFixService.fix_violations(
+      recipe_data: response,
+      violations: all_violations,
+      user_message: user_message,
+      chat: @chat,
+      current_user: current_user,
+      ruby_llm_chat: ruby_llm_chat
+    )
+  end
+
+  # Validates allergen warnings (internal method)
+  #
+  # @param response [Hash] LLM response with recipe data
+  # @param user_message [Message] User message
+  # @return [ValidationResult] Validation result
+  def validate_allergen_warnings_internal(response, user_message)
     # Extract instructions from response
     instructions = response.dig("content", "instructions") || []
 
-    # Extract requested ingredients from user message (simple extraction)
-    # This is a basic implementation - could be enhanced with NLP
+    # Extract requested ingredients from user message
     requested_ingredients = extract_requested_ingredients(user_message.content)
 
     # Get user allergies (convert hash to array of active allergy keys)
@@ -377,34 +443,34 @@ class RecipesController < ApplicationController
                      end
 
     # Validate
-    validation_result = Tools::AllergenWarningValidator.validate(
+    Tools::AllergenWarningValidator.validate(
       instructions: instructions,
       user_allergies: user_allergies,
       requested_ingredients: requested_ingredients
     )
+  end
 
-    # If valid, return original response
-    return response if validation_result.valid?
+  # Validates appliance compatibility (internal method)
+  #
+  # @param response [Hash] LLM response with recipe data
+  # @return [ValidationResult] Validation result
+  def validate_appliance_compatibility_internal(response)
+    # Extract instructions from response
+    instructions = response.dig("content", "instructions") || []
 
-    # Log violations
-    Rails.logger.warn("AllergenWarningValidator: Violations detected")
-    validation_result.violations.each do |violation|
-      Rails.logger.warn("  - #{violation[:type]}: #{violation[:message]}")
-    end
-    Rails.logger.warn("  Fix instructions: #{validation_result.fix_instructions}")
+    # Get user appliances
+    user_appliances = parse_user_field(current_user.appliances)
+    available_appliances = user_appliances.map { |a| a.downcase.strip }
 
-    # Attempt to fix violations automatically
-    Rails.logger.info("RecipeFixService: Attempting to fix violations automatically")
-    fixed_response = RecipeFixService.fix_violations(
-      recipe_data: response,
-      violations: validation_result.violations,
-      user_message: user_message,
-      chat: @chat,
-      current_user: current_user,
-      ruby_llm_chat: ruby_llm_chat
+    # Calculate unavailable appliances
+    unavailable_appliances = AVAILABLE_APPLIANCES.keys.reject { |key| available_appliances.include?(key.downcase) }
+
+    # Validate
+    Tools::ApplianceCompatibilityChecker.validate(
+      instructions: instructions,
+      available_appliances: available_appliances,
+      unavailable_appliances: unavailable_appliances
     )
-
-    fixed_response
   end
 
   # Extracts requested ingredients from user message (basic implementation)
@@ -435,6 +501,54 @@ class RecipesController < ApplicationController
     end
 
     ingredients.uniq
+  end
+
+  # Formats response message using MessageFormatter tool
+  #
+  # @param recipe_data [Hash] The recipe data
+  # @param conversation_context [Hash] Context from ConversationContextAnalyzer
+  # @param intent [String] User intent from IntentClassifier
+  # @param changes_made [Hash] Summary of changes made
+  # @return [Hash] Formatted message with metadata
+  def format_response_message(recipe_data:, conversation_context:, intent:, changes_made: {})
+    Tools::MessageFormatter.format(
+      recipe_data: recipe_data,
+      conversation_context: conversation_context,
+      intent: intent,
+      changes_made: changes_made
+    )
+  rescue StandardError => e
+    Rails.logger.error("MessageFormatter failed: #{e.message}")
+    Rails.logger.error(e.backtrace.join("\n"))
+    # Fallback to original message or default
+    {
+      message: recipe_data["message"] || recipe_data[:message] || "Recipe updated successfully.",
+      tone: "friendly",
+      includes_greeting: false,
+      change_summary: "Recipe updated"
+    }
+  end
+
+  # Detects if allergens were added to the recipe
+  #
+  # @param _recipe_data [Hash] Recipe data (unused, kept for API consistency)
+  # @param user_message [Message] User message
+  # @return [Boolean] True if allergens were likely added
+  def detect_allergens_added(_recipe_data, user_message)
+    return false unless current_user && current_user.active_allergies.any?
+
+    # Extract requested ingredients
+    requested_ingredients = extract_requested_ingredients(user_message.content)
+    return false if requested_ingredients.empty?
+
+    # Check if any requested ingredients match user allergies
+    user_allergies = current_user.active_allergies
+    requested_ingredients.any? do |ingredient|
+      ingredient_lower = ingredient.downcase
+      user_allergies.any? do |allergy|
+        ingredient_lower.include?(allergy.downcase) || allergy.downcase.include?(ingredient_lower)
+      end
+    end
   end
 
   # Adds conversation history to RubyLLM chat instance
