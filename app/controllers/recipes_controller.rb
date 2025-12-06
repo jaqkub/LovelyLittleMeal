@@ -5,6 +5,12 @@ class RecipesController < ApplicationController
   DEFAULT_RECIPE_TITLE = "Untitled"
   DEFAULT_RECIPE_DESCRIPTION = "Nothing here yet..."
 
+  # Maximum number of previous messages to include in conversation context
+  # This balances context preservation with token usage and API performance
+  # Most conversations stay within this limit, providing full context
+  # For longer conversations, only recent messages are included
+  MAX_CONVERSATION_HISTORY = 20
+
   # Fixed list of available appliances - user selects from these options
   # Any appliance not selected is considered unavailable and must NOT be used in recipes
   AVAILABLE_APPLIANCES = {
@@ -143,11 +149,38 @@ class RecipesController < ApplicationController
   end
 
   def process_prompt(chat, user_message)
-    RubyLLM.chat(model: "gpt-4o")
-           .with_instructions(system_prompt(current_user) + system_prompt_addition(chat.recipe))
-           .with_schema(RecipeSchema)
-           .ask(user_message.content)
-           .content
+    # Create RubyLLM chat instance with system instructions and schema
+    ruby_llm_chat = RubyLLM.chat(model: "gpt-4o")
+                           .with_instructions(system_prompt(current_user) + system_prompt_addition(chat.recipe))
+                           .with_schema(RecipeSchema)
+
+    # Add conversation history from previous messages (excluding current one)
+    # This provides context so the AI remembers the conversation flow
+    # and doesn't repeat greetings or lose track of what was discussed
+    # Only include the last MAX_CONVERSATION_HISTORY messages to control token usage
+    build_conversation_history(chat, user_message, ruby_llm_chat)
+
+    # Ask with the current user message content
+    ruby_llm_chat.ask(user_message.content).content
+  end
+
+  # Adds conversation history to RubyLLM chat instance
+  # Only includes the last MAX_CONVERSATION_HISTORY messages to control token usage
+  # Maintains chronological order by ordering by created_at
+  def build_conversation_history(chat, current_user_message, ruby_llm_chat)
+    # Get the last MAX_CONVERSATION_HISTORY messages (excluding the current one)
+    # Order by created_at to maintain chronological conversation flow
+    previous_messages = chat.messages
+                            .where.not(id: current_user_message.id)
+                            .order(:created_at)
+                            .limit(MAX_CONVERSATION_HISTORY)
+
+    # Add each message to the RubyLLM chat instance
+    # This builds up the conversation context for the LLM
+    # Convert Message objects to hash format with role and content keys
+    previous_messages.each do |message|
+      ruby_llm_chat.add_message(role: message.role, content: message.content)
+    end
   end
 
   def system_prompt(user)
