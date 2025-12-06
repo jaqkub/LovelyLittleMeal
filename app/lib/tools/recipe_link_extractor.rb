@@ -1,7 +1,7 @@
 require "faraday"
 require "nokogiri"
 require "json"
-require_relative "errors"
+require_relative "error_classes"
 
 # Extracts recipe content from URLs (web scraping)
 # Handles fetching, parsing, and extracting structured recipe data
