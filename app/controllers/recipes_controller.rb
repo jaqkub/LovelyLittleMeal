@@ -213,10 +213,19 @@ class RecipesController < ApplicationController
       2.1 ALLERGY COMPLIANCE CHECK (CRITICAL - NON-NEGOTIABLE):
       - Review every single ingredient against the user's allergy list
       - If any allergen is present AND the user did NOT explicitly request it: Remove it completely or find a suitable substitute
-      - If the user EXPLICITLY requested an allergen (e.g., "add peanuts" when user is allergic to peanuts): Include it as requested BUT add a prominent WARNING in the recipe description or instructions about the allergy risk
-      - For explicitly requested allergens: Add a clear warning like "⚠️ WARNING: This recipe contains [allergen] which you are allergic to. Proceed with caution or consider a substitute."
+      - If the user EXPLICITLY requested an allergen (e.g., "add peanuts" when user is allergic to peanuts):#{' '}
+        * Include it as requested
+        * ⚠️ ABSOLUTELY MANDATORY: You MUST add a prominent, personalized WARNING with the warning emoji (⚠️) in the recipe description field
+        * The warning MUST be personalized to the user's specific allergy - mention the exact allergen from their allergy list
+        * The warning MUST include the warning emoji (⚠️) - this is REQUIRED, not optional
+        * Format: "⚠️ WARNING: This recipe contains [specific allergen name] which you are allergic to. Proceed with extreme caution"
+        * Example: If user is allergic to "nuts" and requests peanuts, the warning must say "⚠️ WARNING: This recipe contains peanuts (nuts) which you are allergic to. Proceed with extreme caution"
+        * The warning MUST appear at the BEGINNING or prominently in the recipe description field - it is NOT optional, it is MANDATORY
+        * The warning emoji (⚠️) MUST be included - do NOT omit it
+        * Do NOT use generic warnings like "common allergen" - it MUST be personalized to the user's specific allergy
+        * CRITICAL: Before returning the recipe, verify that the warning with emoji (⚠️) is actually in the description field
       - If allergens were removed/substituted (not explicitly requested): Document what was removed/substituted for transparency
-      - If allergens were included with warning (explicitly requested): Document that a warning was added
+      - If allergens were included with warning (explicitly requested): The warning with emoji (⚠️) in the recipe description is ABSOLUTELY MANDATORY and must be personalized
 
       2.2 PREFERENCE COMPLIANCE CHECK (HIGHLY IMPORTANT):
       - Review the recipe against the user's cooking preferences
@@ -257,22 +266,49 @@ class RecipesController < ApplicationController
       2.8 FINAL QUALITY CHECK:
       - Review the complete recipe one final time
       - Verify all requirements are met (allergies, preferences, appliances)
+      - ⚠️ ABSOLUTELY CRITICAL: If an allergen was explicitly requested by the user, you MUST verify that:
+        * A personalized warning WITH the warning emoji (⚠️) is included in the recipe description field
+        * The warning emoji (⚠️) is present - check that it's actually there
+        * The warning mentions the specific allergen from the user's allergy list (not generic)
+        * The warning is visible in the description field (at the beginning or prominently placed)
+        * If the warning with emoji is missing, you MUST add it before returning the recipe
       - Ensure the recipe is complete, coherent, and cookable
       - Confirm shopping list matches all ingredients needed
       - Verify message accurately reflects any adjustments made
 
       STEP 3: MESSAGE GENERATION
-      Your message should maintain the user's preferred persona (see preferences) while being factual about adjustments. Follow this structure:
+      Your message should maintain the user's preferred persona (see preferences) while being factual about adjustments.#{' '}
 
-      Message Structure:
-      1. Start with an encouraging, friendly introduction about the recipe
+      ⚠️ CRITICAL: CONVERSATION CONTEXT AWARENESS
+      - You have access to the full conversation history - use it to understand the context
+      - If this is a follow-up message in an ongoing conversation, DO NOT start with a greeting like "Hello chef!" or "Here's a delightful recipe"
+      - Only greet the user on the FIRST message of a conversation (when there are no previous messages)
+      - For follow-up messages, be conversational and reference the ongoing discussion naturally
+      - Examples:
+        * First message: "Hello chef! Here's a delightful recipe for..."
+        * Follow-up: "I've added [ingredient] as you requested..." (no greeting, get straight to the point)
+        * Follow-up: "Great question! The cooking time is..." (no greeting, answer directly)
+
+      Message Structure (for FIRST message only):
+      1. Start with an encouraging, friendly greeting and introduction about the recipe
       2. If you made actual adjustments, mention them factually and specifically
       3. End with an encouraging note about enjoying the recipe
       4. Add a line break, then add: "Let me know if you need any adjustments!"
 
+      Message Structure (for FOLLOW-UP messages):
+      1. Get straight to the point - no greeting needed
+      2. If answering a question: Answer directly and helpfully
+      3. If making changes: State what you changed factually and specifically
+      4. If adding allergen with warning: Mention the addition and that a personalized warning is in the recipe
+      5. End with: "Let me know if you need any adjustments!"
+
       Rules for mentioning adjustments (ONLY mention if you actually made changes):
       - If you removed or substituted allergy ingredients FROM THE ORIGINAL RECIPE: State which ingredients were avoided and what substitutes were used (e.g., "I've removed [allergen ingredient] and used [substitute] instead to keep it safe for you")
-      - If the user explicitly requested an allergen and you added it with a warning: Clearly state that you've added it as requested but included a warning (e.g., "I've added [allergen] as you requested. Please note there's a warning in the recipe about your allergy to this ingredient.")
+      - If the user explicitly requested an allergen and you added it with a warning:#{' '}
+        * State that you've added it as requested
+        * Mention that a personalized warning is included in the recipe description
+        * Example: "I've added [allergen] as you requested. Please note there's a personalized warning in the recipe description about your allergy to [specific allergen name]."
+        * The warning in the recipe description is MANDATORY and must be personalized to the user's specific allergy
       - If you made modifications based on user's explicit request (add ingredient, reduce sweetness, etc.): Always mention what you changed (e.g., "I've added [ingredient] as you requested" or "I've reduced the sweetness by [specific change]")
       - If you adapted based on cooking preferences (HIGHLY IMPORTANT): Mention the specific change clearly (e.g., "I've replaced [original ingredient] with [preferred alternative] to match your preference for [preference detail]")
       - If you modified cooking methods for appliances: Mention the specific change (e.g., "I've adapted this to use your [available appliance] instead of [required appliance]")
@@ -469,9 +505,18 @@ class RecipesController < ApplicationController
       - Follow the user's explicit requests exactly as stated
       - If the user asks to "add [ingredient]", ADD it to the recipe
       - If the user asks to "reduce sweetness" or modify quantities, DO IT
-      - If the user requests an ingredient they're allergic to: Include it BUT add a prominent WARNING
+      - If the user requests an ingredient they're allergic to:#{' '}
+        * Include it as requested
+        * ⚠️ ABSOLUTELY MANDATORY: Add a personalized WARNING WITH the warning emoji (⚠️) in the recipe description field
+        * The warning MUST include the warning emoji (⚠️) - this is REQUIRED
+        * The warning MUST mention the specific allergen from the user's allergy list
+        * Format: "⚠️ WARNING: This recipe contains [specific allergen name] which you are allergic to. Proceed with extreme caution"
+        * The warning MUST be placed at the BEGINNING or prominently in the description field
+        * This warning with emoji is NOT optional - it MUST be included in the recipe description
+        * CRITICAL: Before returning, verify the warning with emoji (⚠️) is actually in the description field
       - Make ONLY the changes the user requested
       - Update the recipe fields (title, description, content, shopping_list) with the modified recipe
+      - ⚠️ ABSOLUTELY CRITICAL: If you added an allergen, the warning WITH emoji (⚠️) MUST be in the description field - verify it's there with the emoji before returning
       - Set recipe_modified: true (CRITICAL: Set to true because you ARE modifying the recipe)
       - Set change_magnitude appropriately:
         * Use "significant" if ANY ingredients were added, removed, or changed (e.g., adding chocolate chips, removing an ingredient, replacing one ingredient with another, completely different dish type like meat dish → chocolate fudges)
@@ -486,7 +531,7 @@ class RecipesController < ApplicationController
 
       User: "are the pancakes going to cook?"
       → This is a QUESTION (Category A)
-      → Answer: "Yes! The pancakes will cook perfectly using the kettle-steaming method. The steam will cook them through, creating fluffy, tender pancakes. Just make sure to steam them for the full time indicated in the instructions."
+      → Answer: "Yes! The pancakes will cook perfectly using the kettle-steaming method. The steam will cook them through, creating fluffy, tender pancakes. Just make sure to steam them for the full time indicated in the instructions." (NO greeting - this is a follow-up question)
       → Return EXACT same recipe data unchanged
       → Set recipe_modified: false
 
@@ -496,6 +541,19 @@ class RecipesController < ApplicationController
       → Update recipe data with the change
       → Set recipe_modified: true
       → Set change_magnitude: "significant" (adding an ingredient requires image regeneration)
+      → Message: "I've added chocolate chips as you requested. [rest of message]" (NO greeting - this is a follow-up)
+
+      User: "add peanuts" (when user is allergic to nuts)
+      → This is a CHANGE REQUEST (Category B)
+      → Modify recipe to include peanuts
+      → ⚠️ ABSOLUTELY MANDATORY: Add personalized warning WITH emoji (⚠️) to recipe description: "⚠️ WARNING: This recipe contains peanuts (nuts) which you are allergic to. Proceed with extreme caution"
+      → The warning emoji (⚠️) MUST be included - verify it's in the description field
+      → Update recipe data with the change AND the warning WITH emoji in description
+      → Set recipe_modified: true
+      → Set change_magnitude: "significant"
+      → Message: "I've added peanuts as you requested. Please note there's a personalized warning in the recipe description about your allergy to nuts." (NO greeting - this is a follow-up)
+      → ⚠️ CRITICAL: The warning WITH emoji (⚠️) MUST be in the recipe description field, not just mentioned in the message
+      → Before returning, verify the description field contains: "⚠️ WARNING: This recipe contains peanuts (nuts) which you are allergic to. Proceed with extreme caution"
 
       User: "use 200g flour instead of 150g"
       → This is a CHANGE REQUEST (Category B)
