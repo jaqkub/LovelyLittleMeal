@@ -11,34 +11,23 @@
           <div class="mb-3">
             <%= f.label :appliances, "Available appliances", class: "form-label d-block" %>
 
-            <% appliance_options = {
-                 "stove"          => "Stove",
-                 "oven"           => "Oven",
-                 "microwave"      => "Microwave",
-                 "pan"            => "Pan",
-                 "kettle"         => "Kettle",
-                 "fryer"          => "Fryer",
-                 "food_processor" => "Food processor"
-               } %>
+            <% # Get current appliances (handle both hash and legacy formats)
+               current_appliances = if @user.appliances.is_a?(Hash)
+                                         @user.appliances
+                                       else
+                                         # Legacy format - initialize empty hash
+                                         User::STANDARD_APPLIANCES.each_with_object({}) { |a, h| h[a] = false }
+                                       end %>
 
-            <% selected_appliances =
-                 if @user.appliances.is_a?(Array)
-                   @user.appliances.map(&:to_s)
-                 elsif @user.appliances.present?
-                   @user.appliances.to_s.split(",").map(&:strip)
-                 else
-                   []
-                 end %>
-
-            <% appliance_options.each do |value, label_text| %>
+            <% User::STANDARD_APPLIANCES.each do |appliance_key| %>
               <div class="form-check form-check-inline">
-                <%= check_box_tag "user[appliances][]",
-                                  value,
-                                  selected_appliances.include?(value),
-                                  id: "user_appliances_#{value}",
+                <%= check_box_tag "user[appliances][#{appliance_key}]",
+                                  1,
+                                  current_appliances[appliance_key.to_s] == true || current_appliances[appliance_key.to_sym] == true,
+                                  id: "user_appliances_#{appliance_key}",
                                   class: "form-check-input" %>
-                <%= label_tag "user_appliances_#{value}",
-                              label_text,
+                <%= label_tag "user_appliances_#{appliance_key}",
+                              appliance_key.tr("_", " ").split.map(&:capitalize).join(" "),
                               class: "form-check-label" %>
               </div>
             <% end %>

@@ -13,14 +13,18 @@ class RecipesController < ApplicationController
 
   # Fixed list of available appliances - user selects from these options
   # Any appliance not selected is considered unavailable and must NOT be used in recipes
+  # Note: stove implies pan, so pan is not in the list
   AVAILABLE_APPLIANCES = {
     "stove" => "Stove",
     "oven" => "Oven",
     "microwave" => "Microwave",
-    "pan" => "Pan",
+    "blender" => "Blender",
+    "stick_blender" => "Stick blender",
+    "mixer" => "Mixer",
     "kettle" => "Kettle",
-    "fryer" => "Fryer",
-    "food_processor" => "Food processor"
+    "toaster" => "Toaster",
+    "air_fryer" => "Air fryer",
+    "pressure_cooker" => "Pressure cooker"
   }.freeze
 
   def new
@@ -458,9 +462,13 @@ class RecipesController < ApplicationController
     # Extract instructions from response
     instructions = response.dig("content", "instructions") || []
 
-    # Get user appliances
-    user_appliances = parse_user_field(current_user.appliances)
-    available_appliances = user_appliances.map { |a| a.downcase.strip }
+    # Get user appliances (convert hash to array of active appliance keys)
+    available_appliances = if current_user.appliances.is_a?(Hash)
+                             current_user.active_appliances
+                           else
+                             # Legacy format - parse as comma-separated string
+                             parse_user_field(current_user.appliances)
+                           end.map(&:downcase)
 
     # Calculate unavailable appliances
     unavailable_appliances = AVAILABLE_APPLIANCES.keys.reject { |key| available_appliances.include?(key.downcase) }
@@ -781,8 +789,13 @@ class RecipesController < ApplicationController
 
     # Build appliances section with strict enforcement
     # Fixed appliance list - any appliance not selected is unavailable
-    user_appliances = parse_user_field(user.appliances)
-    available_appliances = user_appliances.map { |a| a.downcase.strip }
+    # Get user appliances (convert hash to array of active appliance keys)
+    available_appliances = if user.appliances.is_a?(Hash)
+                             user.active_appliances
+                           else
+                             # Legacy format - parse as comma-separated string
+                             parse_user_field(user.appliances)
+                           end.map(&:downcase)
 
     # Calculate unavailable appliances (all appliances not in the user's selection)
     unavailable_appliances = AVAILABLE_APPLIANCES.keys.reject { |key| available_appliances.include?(key.downcase) }
@@ -816,13 +829,27 @@ class RecipesController < ApplicationController
       The user does NOT have access to the following appliances. These appliances MUST NEVER be used in any recipe, instruction, or cooking method:
       #{unavailable_list}
 
+      WHAT THE USER HAS (ASSUMED BASIC EQUIPMENT):
+      - Basic kitchen utensils: knives, cutting boards, bowls, spoons, forks, measuring cups/spoons, spatulas, whisks, etc.
+      - Pans and pots: If the user has "stove" selected, they have basic pans and pots for stovetop cooking (this is implied by stove)
+      - Basic storage containers: bowls, plates, containers for ingredients
+
+      WHAT THE USER DOES NOT HAVE (DO NOT ASSUME):
+      - Do NOT assume any specialized equipment beyond what's explicitly listed in AVAILABLE APPLIANCES above
+      - Do NOT assume stand mixers, food processors, blenders, or any other appliances unless explicitly listed
+      - Do NOT assume specialized tools like mandolines, spiralizers, pasta makers, etc. unless explicitly listed
+      - Do NOT assume any cooking equipment beyond basic utensils and the selected appliances
+      - If a recipe requires equipment not in the AVAILABLE list, you MUST adapt it to use only available appliances and basic utensils
+
       CRITICAL RULES:
       - You MUST ONLY use appliances from the AVAILABLE list above
       - You MUST NEVER use any appliance from the UNAVAILABLE list above
-      - If a recipe requires an unavailable appliance, you MUST completely rebuild or adapt the recipe to use ONLY available appliances
+      - You can assume basic kitchen utensils (knives, bowls, spoons, etc.) and pans/pots if stove is available
+      - You MUST NOT assume any other specialized equipment beyond what's explicitly selected
+      - If a recipe requires an unavailable appliance, you MUST completely rebuild or adapt the recipe to use ONLY available appliances and basic utensils
       - This is MANDATORY and NON-NEGOTIABLE - recipes that require unavailable appliances are NOT acceptable
       - If a recipe cannot be made with available appliances, you MUST find alternative cooking methods or rebuild the recipe entirely
-      - The recipe MUST be fully executable using ONLY the user's available equipment - no exceptions
+      - The recipe MUST be fully executable using ONLY the user's available equipment and basic utensils - no exceptions
       - Do NOT suggest using unavailable appliances as alternatives - they are completely off-limits
     TEXT
 

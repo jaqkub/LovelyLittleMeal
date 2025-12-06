@@ -9,8 +9,18 @@ class UsersController < ApplicationController
     @user = current_user
     permitted = user_params
 
-    # Handle appliances (still stored as comma-separated string)
-    permitted[:appliances] = Array(permitted[:appliances]).reject(&:blank?).join(", ") if permitted.key?(:appliances)
+    # Handle appliances (stored as hash with boolean values, like allergies)
+    if permitted.key?(:appliances)
+      appliances_hash = permitted[:appliances] || {}
+      # Convert checkbox values (1/0 or true/false) to boolean hash
+      # Initialize with all standard appliances set to false
+      normalized_appliances = User::STANDARD_APPLIANCES.each_with_object({}) do |appliance, hash|
+        value = appliances_hash[appliance] || appliances_hash[appliance.to_sym]
+        # Convert string "1" or "true" to boolean true, everything else to false
+        hash[appliance] = [true, "true", "1", 1].include?(value)
+      end
+      permitted[:appliances] = normalized_appliances
+    end
 
     # Handle allergies (stored as hash with boolean values)
     if permitted.key?(:allergies)
@@ -42,9 +52,14 @@ class UsersController < ApplicationController
       :system_prompt,
       :age,
       :weight,
-      :gender,
-      appliances: []
+      :gender
     )
+
+    # Permit appliances hash with all standard appliance keys
+    if params[:user] && params[:user][:appliances]
+      appliances_hash = params[:user][:appliances].permit(User::STANDARD_APPLIANCES.map(&:to_sym))
+      base_params[:appliances] = appliances_hash
+    end
 
     # Permit allergies hash with all standard allergy keys
     if params[:user] && params[:user][:allergies]

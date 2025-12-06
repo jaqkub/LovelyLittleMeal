@@ -21,7 +21,7 @@ module Tools
     #
     # @param instructions [Array<String>] The recipe instructions array to validate
     # @param available_appliances [Array<String>] List of user's available appliances (e.g., ["stove", "oven"])
-    # @param unavailable_appliances [Array<String>] List of user's unavailable appliances (e.g., ["microwave", "food_processor"])
+    # @param unavailable_appliances [Array<String>] List of user's unavailable appliances (e.g., ["microwave", "blender"])
     # @return [ValidationResult] Validation result with violations and fix instructions
     def self.validate(instructions:, available_appliances:, unavailable_appliances:)
       violations = []
