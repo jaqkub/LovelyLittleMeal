@@ -85,6 +85,9 @@ class RecipeFixService
       when :generic_warning
         # Can be fixed by updating the warning text to include allergen name
         programmatic << violation
+      when :non_metric_unit_in_ingredients, :non_metric_unit_in_shopping_list, :unrealistic_shopping_amount
+        # Can be fixed programmatically by applying converted values
+        programmatic << violation
       when :allergen_not_in_instructions
         # Requires LLM to add allergen to appropriate step
         llm_required << violation
