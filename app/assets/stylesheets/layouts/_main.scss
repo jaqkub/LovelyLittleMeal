@@ -1,0 +1,41 @@
+// Main layout styles
+// Global layout styles for the application structure
+
+// Global height styles for full-viewport layouts
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden; // Prevent body scroll
+}
+
+// Ensure main content area can use flexbox properly and fills available height
+#main-content {
+  display: flex;
+  flex-direction: column;
+  min-height: 0; // Allow flex children to shrink below content size
+}
+
+// User settings edit page styling
+#user-settings-edit {
+  background-color: #ebeaea;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+}
+
+// Utility class to prevent horizontal scrolling
+.no-horizontal-scroll {
+  overflow-x: hidden !important;
+}
+
+// Override Bootstrap row margins
+.row {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+// Hide default Turbo progress bar (we use custom loading indicator in chat)
+.turbo-progress-bar {
+  display: none !important;
+}
+

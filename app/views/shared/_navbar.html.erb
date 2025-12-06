@@ -21,7 +21,8 @@
   <!-- Logo – clickable and goes to root -->
 <%= link_to root_path,
       class: "position-absolute top-50 start-50 translate-middle",
-      style: "pointer-events: auto; z-index: 0; text-decoration: none;" do %>
+      style: "pointer-events: auto; z-index: 0; text-decoration: none;",
+      data: { turbo_prefetch: false } do %>
   <%= image_tag(
         "https://res.cloudinary.com/dao1vxhsu/image/upload/v1764934638/logo_no_background_aszsab.png",
         alt: "LovelyLittleMeal",

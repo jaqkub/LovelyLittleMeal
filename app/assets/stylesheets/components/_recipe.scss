@@ -1,0 +1,177 @@
+// Recipe card component styles
+// Used for displaying recipe cards in the recipes list
+
+.recipe-card {
+  background-color: #ffffff;
+  border-radius: 12px;
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  overflow: hidden; // Ensure image respects border radius
+  display: flex;
+  flex-direction: column;
+  transition: box-shadow 0.2s ease-in-out, transform 0.2s ease-in-out;
+  
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    transform: translateY(-2px);
+  }
+}
+
+// Recipe card image section - at top of card
+.recipe-card-image {
+  width: 100%;
+  overflow: hidden;
+  background-color: #f8f9fa;
+  border-radius: 12px 12px 0 0; // Rounded top corners to match card
+  
+  .recipe-card-img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    display: block;
+  }
+  
+  .recipe-card-img-placeholder {
+    width: 100%;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f8f9fa;
+    color: #6c757d;
+  }
+}
+
+// Recipe card body - content section
+.recipe-card-body {
+  padding: 1rem;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+// Recipe card footer - actions section
+.recipe-card-footer {
+  padding: 0.75rem 1rem;
+  border-top: 1px solid #e9ecef;
+  background-color: #fafafa;
+}
+
+// Recipe details page styling
+#recipe-details {
+  // Simple animation: slide in from right to left when recipe updates
+  // Only animate if recipe has actual content (has-content class)
+  &.has-content {
+    animation: slideInFromRight 1s ease-out;
+  }
+  
+  // Ensure the container can scroll
+  overflow-y: auto;
+  overflow-x: hidden;
+  
+  // Custom scrollbar styling for Firefox
+  scrollbar-width: thin;
+  scrollbar-color: rgba(39, 39, 39, 0.25) #ffffff; // Match input focus glow color
+  
+  // Custom scrollbar styling for Webkit browsers (Chrome, Safari, Edge)
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: #ffffff;
+    border-radius: 4px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: rgba(39, 39, 39, 0.25); // Match input focus glow color (#272727 with 25% opacity)
+    border-radius: 4px;
+    
+    &:hover {
+      background: rgba(39, 39, 39, 0.4); // Slightly darker on hover
+    }
+  }
+  
+  // Add padding to prevent content from being squashed by borders
+  padding-right: 0.5rem;
+  padding-left: 0.25rem;
+  
+  h1 {
+    font-size: 2rem;
+    font-weight: 600;
+    color: #212529;
+  }
+  
+  h3 {
+    font-weight: 600;
+    color: #495057;
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 0.5rem;
+  }
+  
+  // Ingredients list styling
+  ul.list-unstyled {
+    li {
+      padding-left: 0.5rem;
+      line-height: 1.6;
+    }
+  }
+  
+  // Instructions list styling
+  ol {
+    // Add proper padding to prevent numbers from being cut off
+    padding-left: 1.5rem;
+    margin-left: 0;
+    
+    li {
+      line-height: 1.8;
+      padding-left: 0.5rem;
+      margin-left: 0;
+      
+      p {
+        margin-bottom: 0.5rem;
+        
+        &:last-child {
+          margin-bottom: 0;
+        }
+      }
+    }
+  }
+  
+  // Shopping list styling
+  .bg-light {
+    background-color: #f8f9fa !important;
+    border-left: 3px solid #272727; // Primary color
+  }
+}
+
+// Recipes list scrollbar styling - matches recipe-details scrollbar
+#recipes-list-scrollable {
+  // Ensure the container can scroll
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  // Custom scrollbar styling for Firefox
+  scrollbar-width: thin;
+  scrollbar-color: rgba(39, 39, 39, 0.25) #ffffff; // Match input focus glow color
+
+  // Custom scrollbar styling for Webkit browsers (Chrome, Safari, Edge)
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #ffffff;
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(39, 39, 39, 0.25); // Match input focus glow color (#272727 with 25% opacity)
+    border-radius: 4px;
+    
+    &:hover {
+      background: rgba(39, 39, 39, 0.4); // Slightly darker on hover
+    }
+  }
+}
+
