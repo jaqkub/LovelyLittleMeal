@@ -25,43 +25,52 @@
   justify-content: center;
 }
 
-// Favorites checkbox styling - modern, matches app aesthetic
-#favorites-checkbox-container {
-  .form-check-input {
-    width: 1.25rem;
-    height: 1.25rem;
-    margin-top: 0.125rem;
-    border: 2px solid #dee2e6;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
+// Favorites filter button styling - matches app aesthetic
+// Use higher specificity to override Bootstrap .btn styles
+.btn.favorites-filter-button {
+  height: 38px !important; // Match input height
+  padding: 0.375rem 1rem !important;
+  border-radius: 12px !important;
+  background-color: white !important;
+  border: 1px solid #dee2e6 !important; // Light border when off
+  color: #212529 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  white-space: nowrap !important;
+  transition: all 0.2s ease-in-out !important;
+  
+  i {
+    font-size: 1.1rem;
+  }
+  
+  span {
+    font-size: 0.875rem;
+  }
+  
+  &:hover {
+    border-color: #272727 !important;
+    background-color: rgba(39, 39, 39, 0.02) !important;
+  }
+  
+  &:focus {
+    border-color: #272727 !important;
+    box-shadow: 0 0 0 0.2rem rgba(39, 39, 39, 0.25) !important;
+  }
+  
+  // Active state - bold border
+  &.favorites-filter-button-active {
+    border: 2px solid #272727 !important; // Bold border when on
+    background-color: white !important;
     
-    &:checked {
-      background-color: #272727; // Primary color
-      border-color: #272727;
-      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10l3 3l6-6'/%3e%3c/svg%3e");
+    &:hover {
+      background-color: rgba(39, 39, 39, 0.05) !important;
+      border-color: #272727 !important;
     }
     
     &:focus {
-      border-color: #272727;
-      box-shadow: 0 0 0 0.2rem rgba(39, 39, 39, 0.25); // Match input focus glow
-    }
-    
-    &:hover:not(:checked) {
-      border-color: #272727;
-      background-color: rgba(39, 39, 39, 0.05); // Subtle hover effect
-    }
-  }
-  
-  .form-check-label {
-    font-size: 1rem;
-    margin-left: 0.5rem;
-    cursor: pointer;
-    user-select: none;
-    color: #212529;
-    
-    &:hover {
-      color: #272727;
+      border-color: #272727 !important;
+      box-shadow: 0 0 0 0.2rem rgba(39, 39, 39, 0.25) !important;
     }
   }
 }

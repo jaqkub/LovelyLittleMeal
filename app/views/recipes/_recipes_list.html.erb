@@ -1,0 +1,74 @@
+<div id="recipes-list-scrollable" class="overflow-y-auto flex-grow-1 pt-1" style="min-height: 0;">
+
+  <% if recipes.any? %>
+    <div class="row g-3">
+      <% recipes.each do |recipe| %>
+        <div class="col-12 col-md-6 col-lg-4">
+          <div class="recipe-card h-100">
+
+            <%# Recipe Image at top of card %>
+            <div class="recipe-card-image">
+              <% if recipe.image.attached? %>
+                <%= image_tag rails_blob_path(recipe.image),
+                              alt: "#{recipe.title} image",
+                              class: "recipe-card-img" %>
+              <% elsif recipe.content.present? && recipe.content.is_a?(Hash) && recipe.content.any? %>
+                <%# Loading placeholder for image generation %>
+                <div class="recipe-card-img-placeholder">
+                  <div class="text-center text-muted">
+                    <div class="spinner-border spinner-border-sm mb-2" role="status" aria-hidden="true">
+                      <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mb-0 small">Generating image...</p>
+                  </div>
+                </div>
+              <% else %>
+                <%# Placeholder when no image and no content yet %>
+                <div class="recipe-card-img-placeholder">
+                  <i class="bi bi-image fs-1 text-muted"></i>
+                </div>
+              <% end %>
+            </div>
+
+            <div class="recipe-card-body d-flex flex-column">
+              <%= link_to recipe_path(recipe),
+                          class: "text-decoration-none text-dark mb-2",
+                          data: { turbo_prefetch: false, turbo_frame: "_top" } do %>
+
+                <h3 class="h5 mb-1"><%= recipe.title || "Untitled Recipe" %></h3>
+
+                <% if recipe.description.present? && recipe.description != "Nothing here yet..." %>
+                  <p class="text-muted mb-1"><%= recipe.description %></p>
+                <% end %>
+
+                <p class="text-muted small mb-0">
+                  Created: <%= recipe.created_at.strftime("%B %d, %Y") %>
+                </p>
+
+              <% end %>
+            </div>
+
+            <div class="recipe-card-footer d-flex justify-content-end gap-3">
+              <%= render "recipes/favorite_button", recipe: recipe %>
+
+              <%= button_to recipe_path(recipe),
+                            method: :delete,
+                            data: { turbo_confirm: "Delete this recipe?" },
+                            class: "btn p-0 border-0 bg-transparent",
+                            form_class: "d-inline" do %>
+                <i class="bi bi-trash fs-3 text-black"></i>
+              <% end %>
+            </div>
+
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="d-flex align-items-center justify-content-center flex-grow-1">
+      <p class="text-muted mb-0">You don't have any recipes yet.</p>
+    </div>
+  <% end %>
+
+</div>
+

@@ -1,122 +1,56 @@
 <% left_content = capture do %>
   <h2 class="mb-3">Your saved recipes</h2>
 
-  <!-- SEARCH FORM -->
-  <%= form_with url: recipes_path,
-                method: :get,
-                class: "mb-3",
-                data: { turbo_frame: "recipes_list" } do %>
-
-    <div class="d-flex align-items-center">
-
+  <!-- SEARCH AND FILTER -->
+  <div class="mb-3">
+    <div class="d-flex flex-column flex-md-row gap-2 align-items-stretch align-items-md-center">
       <!-- SEARCH FIELD -->
-      <div class="d-flex gap-2 align-items-center flex-grow-1" style="max-width: 700px;">
+      <%= form_with url: recipes_path,
+                    method: :get,
+                    class: "d-flex gap-2 align-items-center flex-grow-1",
+                    local: false,
+                    data: { turbo_stream: true } do |f| %>
         <%= text_field_tag :query,
                            params[:query],
                            id: "recipe-search-input",
                            class: "form-control flex-grow-1",
                            placeholder: "Search your recipes...",
                            oninput: "this.form.requestSubmit()" %>
-
-        <button class="btn btn-primary flex-shrink-0" type="submit" id="recipe-search-button">
-          Search
-        </button>
-
-        <!-- FAVORITES CHECKBOX -->
-        <div class="form-check d-flex align-items-center flex-shrink-0" id="favorites-checkbox-container">
-          <%= check_box_tag :favorites,
-                            "1",
-                            params[:favorites] == "1",
-                            class: "form-check-input",
-                            id: "favorites-checkbox",
-                            onchange: "this.form.requestSubmit()" %>
-
-          <%= label_tag :favorites,
-                        "Show favorites only",
-                        class: "form-check-label",
-                        for: "favorites-checkbox" %>
-        </div>
-      </div>
-
-    </div>
-  <% end %>
-
-  <!-- RECIPES LIST (CARDS) -->
-  <turbo-frame id="recipes_list" class="d-flex flex-column flex-grow-1" style="min-height: 0;">
-    <div id="recipes-list-scrollable" class="overflow-y-auto flex-grow-1 pt-1" style="min-height: 0;">
-
-      <% if @recipes.any? %>
-        <div class="row g-3">
-          <% @recipes.each do |recipe| %>
-            <div class="col-12 col-md-6 col-lg-4">
-              <div class="recipe-card h-100">
-
-                <%# Recipe Image at top of card %>
-                <div class="recipe-card-image">
-                  <% if recipe.image.attached? %>
-                    <%= image_tag rails_blob_path(recipe.image),
-                                  alt: "#{recipe.title} image",
-                                  class: "recipe-card-img" %>
-                  <% elsif recipe.content.present? && recipe.content.is_a?(Hash) && recipe.content.any? %>
-                    <%# Loading placeholder for image generation %>
-                    <div class="recipe-card-img-placeholder">
-                      <div class="text-center text-muted">
-                        <div class="spinner-border spinner-border-sm mb-2" role="status" aria-hidden="true">
-                          <span class="visually-hidden">Loading...</span>
-                        </div>
-                        <p class="mb-0 small">Generating image...</p>
-                      </div>
-                    </div>
-                  <% else %>
-                    <%# Placeholder when no image and no content yet %>
-                    <div class="recipe-card-img-placeholder">
-                      <i class="bi bi-image fs-1 text-muted"></i>
-                    </div>
-                  <% end %>
-                </div>
-
-                <div class="recipe-card-body d-flex flex-column">
-                  <%= link_to recipe_path(recipe),
-                              class: "text-decoration-none text-dark mb-2",
-                              data: { turbo_prefetch: false, turbo_frame: "_top" } do %>
-
-                    <h3 class="h5 mb-1"><%= recipe.title || "Untitled Recipe" %></h3>
-
-                    <% if recipe.description.present? && recipe.description != "Nothing here yet..." %>
-                      <p class="text-muted mb-1"><%= recipe.description %></p>
-                    <% end %>
-
-                    <p class="text-muted small mb-0">
-                      Created: <%= recipe.created_at.strftime("%B %d, %Y") %>
-                    </p>
-
-                  <% end %>
-                </div>
-
-                <div class="recipe-card-footer d-flex justify-content-end gap-3">
-                  <%= render "recipes/favorite_button", recipe: recipe %>
-
-                  <%= button_to recipe_path(recipe),
-                                method: :delete,
-                                data: { turbo_confirm: "Delete this recipe?" },
-                                class: "btn p-0 border-0 bg-transparent",
-                                form_class: "d-inline" do %>
-                    <i class="bi bi-trash fs-3 text-black"></i>
-                  <% end %>
-                </div>
-
-              </div>
-            </div>
-          <% end %>
-        </div>
-      <% else %>
-        <div class="d-flex align-items-center justify-content-center flex-grow-1">
-          <p class="text-muted mb-0">You don't have any recipes yet.</p>
-        </div>
+        <%= hidden_field_tag :favorites, params[:favorites] if params[:favorites].present? %>
       <% end %>
 
+      <!-- FAVORITES BUTTON - Simple link that toggles -->
+      <div id="favorites-button-wrapper">
+        <% favorites_active = params[:favorites] == "1" %>
+        <% 
+          # Build URL: if active, remove favorites param; if inactive, add it
+          if favorites_active
+            # Toggling off - remove favorites, keep query if present
+            favorites_url = params[:query].present? ? recipes_path(query: params[:query]) : recipes_path
+          else
+            # Toggling on - add favorites, keep query if present
+            favorites_url = params[:query].present? ? recipes_path(query: params[:query], favorites: "1") : recipes_path(favorites: "1")
+          end
+        %>
+        <%= link_to favorites_url,
+                    id: "favorites-toggle-button",
+                    class: "btn favorites-filter-button #{favorites_active ? 'favorites-filter-button-active' : ''}",
+                    data: { 
+                      turbo_method: :get,
+                      turbo_stream: true,
+                      turbo_action: "advance"
+                    } do %>
+          <i class="bi <%= favorites_active ? 'bi-star-fill text-warning' : 'bi-star' %>"></i>
+          <span class="ms-1">only</span>
+        <% end %>
+      </div>
     </div>
-  </turbo-frame>
+  </div>
+
+  <!-- RECIPES LIST (CARDS) -->
+  <div id="recipes-list-container" class="d-flex flex-column flex-grow-1" style="min-height: 0;">
+    <%= render partial: "recipes/recipes_list", locals: { recipes: @recipes } %>
+  </div>
 <% end %>
 
 <% right_content = capture do %>

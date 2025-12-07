@@ -1,0 +1,29 @@
+<%# Update the recipes list %>
+<%= turbo_stream.update "recipes-list-container" do %>
+  <%= render partial: "recipes/recipes_list", locals: { recipes: @recipes } %>
+<% end %>
+
+<%# Always update the favorites button to reflect current state (preserves it during search) %>
+<%= turbo_stream.update "favorites-button-wrapper" do %>
+  <% favorites_active = params[:favorites] == "1" %>
+  <% 
+    # Build URL: if active, remove favorites param; if inactive, add it
+    if favorites_active
+      favorites_url = params[:query].present? ? recipes_path(query: params[:query]) : recipes_path
+    else
+      favorites_url = params[:query].present? ? recipes_path(query: params[:query], favorites: "1") : recipes_path(favorites: "1")
+    end
+  %>
+  <%= link_to favorites_url,
+              id: "favorites-toggle-button",
+              class: "btn favorites-filter-button #{favorites_active ? 'favorites-filter-button-active' : ''}",
+              data: { 
+                turbo_method: :get,
+                turbo_stream: true,
+                turbo_action: "advance"
+              } do %>
+    <i class="bi <%= favorites_active ? 'bi-star-fill text-warning' : 'bi-star' %>"></i>
+    <span class="ms-1">only</span>
+  <% end %>
+<% end %>
+

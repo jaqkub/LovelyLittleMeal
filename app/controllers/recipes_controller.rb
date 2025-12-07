@@ -67,9 +67,14 @@ class RecipesController < ApplicationController
       )
     end
 
-    return unless params[:favorites] == "1"
+    if params[:favorites] == "1"
+      @recipes = @recipes.where(favorite: true)
+    end
 
-    @recipes = @recipes.where(favorite: true)
+    respond_to do |format|
+      format.html
+      format.turbo_stream
+    end
   end
 
   def message
