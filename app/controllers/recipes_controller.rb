@@ -127,20 +127,14 @@ class RecipesController < ApplicationController
         raise
       end
 
-      # Determine if image regeneration is needed
-      # Regenerate if: no image exists OR change is significant (any ingredient change, not just quantities)
-      # Significant changes require new images to accurately represent the different recipe
-      # Quantity-only changes (minor) don't require regeneration
-      requires_regeneration = !@recipe.image.attached? || change_magnitude == "significant"
-      @image_regenerating = requires_regeneration && @recipe.image.attached?
-
-      if requires_regeneration
-        # Generate image asynchronously in the background
-        # This allows the request to return immediately while image generation happens in parallel
-        # Multiple image generation jobs can run concurrently, enabling parallelization
-        # Pass force_regenerate flag if image exists but change is significant
-        RecipeImageGenerationJob.perform_later(@recipe.id, { force_regenerate: @recipe.image.attached? })
-      end
+      # Phase 6: Image Generation (Non-blocking, runs in parallel)
+      # Start image generation earlier in the flow using ImageGenerationStarter tool
+      # This allows image generation to run in parallel with other post-processing steps
+      # The tool determines if regeneration is needed and enqueues the job non-blocking
+      # Image generation starts as soon as the recipe is saved (we need the recipe ID)
+      # This happens right after validation, allowing images to generate while the response is being prepared
+      @image_regenerating = @recipe.image.attached? && change_magnitude&.downcase == "significant"
+      Tools::ImageGenerationStarter.start(recipe: @recipe, change_magnitude: change_magnitude)
     end
 
     respond_to do |format|
