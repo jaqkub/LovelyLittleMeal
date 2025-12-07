@@ -2,13 +2,13 @@
 <%= turbo_stream_from "recipe_#{@recipe.id}" %>
 
 <% left_content = capture do %>
-  <div id="recipe-details" class="overflow-y-auto flex-grow-1" style="min-height: 0; max-height: 100%;">
+  <div id="recipe-details" class="overflow-y-auto flex-grow-1" style="min-height: 0;">
     <%= render "recipes/details", recipe: @recipe %>
   </div>
 <% end %>
 
 <% right_content = capture do %>
-  <div id="chat-messages" class="overflow-y-auto flex-grow-1 mb-3 d-flex flex-column" style="min-height: 0; max-height: 100%;" data-chat-target="messages">
+  <div id="chat-messages" class="overflow-y-auto flex-grow-1 mb-3 d-flex flex-column" style="min-height: 0;" data-chat-target="messages">
     <%# Spacer that grows to push messages to bottom when content is short %>
     <%# When content overflows, this spacer shrinks to 0 and scrolling works normally %>
     <%# Only show spacer when there are messages (empty message handles its own centering) %>

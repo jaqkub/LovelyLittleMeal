@@ -95,6 +95,20 @@
   -ms-overflow-style: none;
 }
 
+// Chat container - control height split on mobile
+.chat-container {
+  // On mobile, take 30% of available space using flex-basis
+  // flex: 0 1 30% means: don't grow, can shrink, 30% basis
+  @media (max-width: 991.98px) {
+    flex: 0 1 35% !important; // 30% of parent height, can shrink if needed
+    min-height: 0; // Allow shrinking
+    overflow: hidden; // Prevent outer scrollbar - inner #chat-messages handles scrolling
+    min-width: 100% !important; // Full width on mobile
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}
+
 // Empty chat message - smooth fade out
 #empty-chat-message {
   transition: opacity 0.2s ease-out, min-height 0.2s ease-out;

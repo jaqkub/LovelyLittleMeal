@@ -69,6 +69,8 @@
   overflow-y: auto;
   overflow-x: hidden;
   
+  // Remove max-height constraint - let flexbox handle the sizing
+  
   // Custom scrollbar styling for Firefox
   scrollbar-width: thin;
   scrollbar-color: rgba(39, 39, 39, 0.25) #ffffff; // Match input focus glow color
@@ -142,6 +144,17 @@
   .bg-light {
     background-color: #f8f9fa !important;
     border-left: 3px solid #272727; // Primary color
+  }
+}
+
+// Recipe details container - control height split on mobile
+.recipe-details-container {
+  // On mobile, take 70% of available space using flex-basis
+  // flex: 0 1 70% means: don't grow, can shrink, 70% basis
+  @media (max-width: 991.98px) {
+    flex: 0 1 65% !important; // 70% of parent height, can shrink if needed
+    min-height: 0; // Allow shrinking
+    overflow: hidden; // Prevent outer scrollbar - inner #recipe-details handles scrolling
   }
 }
 
