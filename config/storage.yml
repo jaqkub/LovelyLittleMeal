@@ -6,13 +6,24 @@ local:
   service: Disk
   root: <%= Rails.root.join("storage") %>
 
+# Cloudinary for image storage (production on Heroku)
+# Uses environment variables (recommended for Heroku)
+# The activestorage-cloudinary-service gem provides the Cloudinary service adapter
+# Note: This uses a different cloud name (ddh2buclq) than the static icons (dao1vxhsu)
+cloudinary:
+  service: Cloudinary
+  cloud_name: <%= ENV.fetch("CLOUDINARY_CLOUD_NAME", "ddh2buclq") %>
+  api_key: <%= ENV.fetch("CLOUDINARY_API_KEY") { Rails.application.credentials.dig(:cloudinary, :api_key) } %>
+  api_secret: <%= ENV.fetch("CLOUDINARY_API_SECRET") { Rails.application.credentials.dig(:cloudinary, :api_secret) } %>
+
 # Use bin/rails credentials:edit to set the AWS secrets (as aws:access_key_id|secret_access_key)
-# amazon:
-#   service: S3
-#   access_key_id: <%= Rails.application.credentials.dig(:aws, :access_key_id) %>
-#   secret_access_key: <%= Rails.application.credentials.dig(:aws, :secret_access_key) %>
-#   region: us-east-1
-#   bucket: your_own_bucket-<%= Rails.env %>
+# Or use environment variables (recommended for Heroku)
+amazon:
+  service: S3
+  access_key_id: <%= ENV.fetch("AWS_ACCESS_KEY_ID") { Rails.application.credentials.dig(:aws, :access_key_id) } %>
+  secret_access_key: <%= ENV.fetch("AWS_SECRET_ACCESS_KEY") { Rails.application.credentials.dig(:aws, :secret_access_key) } %>
+  region: <%= ENV.fetch("AWS_REGION", "us-east-1") %>
+  bucket: <%= ENV.fetch("AWS_S3_BUCKET") { "lovelylittlemeal-#{Rails.env}" } %>
 
 # Remember not to checkin your GCS keyfile to a repository
 # google:

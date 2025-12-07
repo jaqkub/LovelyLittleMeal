@@ -89,3 +89,7 @@ gem "chunky_png", "~> 1.4"
 
 # Async execution for parallel validation
 gem "async", "~> 2.0"
+
+# Cloudinary for image storage and processing (ActiveStorage)
+gem "cloudinary", "~> 1.25"
+gem "activestorage-cloudinary-service", "~> 1.0"
