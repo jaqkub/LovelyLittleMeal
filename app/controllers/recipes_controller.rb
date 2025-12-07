@@ -374,38 +374,57 @@ class RecipesController < ApplicationController
   # Validates recipe and automatically fixes violations
   # Validates allergen warnings, ingredient allergies, and appliance compatibility
   # Uses RecipeFixService to implement a validation loop that fixes violations
+  # Uses RecipeValidator for parallel execution of all validations
   #
   # @param response [Hash] LLM response with recipe data
   # @param user_message [Message] User message that triggered recipe generation
   # @param ruby_llm_chat [RubyLLM::Chat] RubyLLM chat instance with conversation history
   # @return [Hash] Fixed recipe data (or original if no violations)
   def validate_recipe(response, user_message, ruby_llm_chat)
-    # Collect all violations from different validators
-    all_violations = []
-    all_fix_instructions = []
+    # Prepare data for parallel validation
+    requested_ingredients = extract_requested_ingredients(user_message.content)
 
-    # Validate allergen warnings (for explicitly requested allergens)
-    allergen_validation_result = validate_allergen_warnings_internal(response, user_message)
-    all_violations.concat(allergen_validation_result.violations) if allergen_validation_result
-    if allergen_validation_result && allergen_validation_result.fix_instructions.present?
-      all_fix_instructions << allergen_validation_result.fix_instructions
-    end
+    # Get user allergies (convert hash to array of active allergy keys)
+    user_allergies = if current_user.allergies.is_a?(Hash)
+                       current_user.active_allergies
+                     else
+                       # Legacy format - parse as comma-separated string
+                       parse_user_field(current_user.allergies)
+                     end
 
-    # Validate ingredient allergies (check all ingredients against user allergies)
-    ingredient_allergy_result = validate_ingredient_allergies_internal(response, user_message)
-    all_violations.concat(ingredient_allergy_result.violations) if ingredient_allergy_result
-    if ingredient_allergy_result && ingredient_allergy_result.fix_instructions.present?
-      all_fix_instructions << ingredient_allergy_result.fix_instructions
-    end
+    # Get user appliances (convert hash to array of active appliance keys)
+    available_appliances = if current_user.appliances.is_a?(Hash)
+                             current_user.active_appliances
+                           else
+                             # Legacy format - parse as comma-separated string
+                             parse_user_field(current_user.appliances)
+                           end.map(&:downcase)
 
-    # Validate metric units and shopping list
-    metric_unit_result = validate_metric_units_internal(response)
-    all_violations.concat(metric_unit_result.violations) if metric_unit_result
-    if metric_unit_result && metric_unit_result.fix_instructions.present?
-      all_fix_instructions << metric_unit_result.fix_instructions
-    end
-    # Store converted data for programmatic fixes
-    if metric_unit_result
+    # Calculate unavailable appliances
+    unavailable_appliances = AVAILABLE_APPLIANCES.keys.reject { |key| available_appliances.include?(key.downcase) }
+
+    # Run all validations in parallel using RecipeValidator
+    validation_start = Time.current
+    aggregated_results = RecipeValidator.validate_all(
+      recipe_data: response,
+      user: current_user,
+      user_message: user_message,
+      requested_ingredients: requested_ingredients,
+      available_appliances: available_appliances,
+      unavailable_appliances: unavailable_appliances,
+      user_allergies: user_allergies
+    )
+    validation_time = (Time.current - validation_start) * 1000
+    Rails.logger.info("RecipeValidator: Parallel validation completed in #{validation_time.round(2)}ms")
+
+    all_violations = aggregated_results[:violations] || []
+    all_fix_instructions = aggregated_results[:fix_instructions] || []
+    individual_results = aggregated_results[:individual_results] || {}
+
+    # Store converted data for programmatic fixes (from metric unit validation)
+    # Get this from the individual metric unit validator result
+    metric_unit_result = individual_results[:metric_unit]
+    if metric_unit_result && metric_unit_result.respond_to?(:instance_variable_get)
       all_violations.each do |violation|
         next unless violation[:type].to_s.start_with?("non_metric", "unrealistic_shopping")
 
@@ -414,13 +433,6 @@ class RecipesController < ApplicationController
           shopping_list: metric_unit_result.instance_variable_get(:@converted_shopping_list)
         }
       end
-    end
-
-    # Validate appliance compatibility
-    appliance_validation_result = validate_appliance_compatibility_internal(response)
-    all_violations.concat(appliance_validation_result.violations) if appliance_validation_result
-    if appliance_validation_result && appliance_validation_result.fix_instructions.present?
-      all_fix_instructions << appliance_validation_result.fix_instructions
     end
 
     # If no violations, return original response
@@ -541,6 +553,30 @@ class RecipesController < ApplicationController
       instructions: instructions,
       available_appliances: available_appliances,
       unavailable_appliances: unavailable_appliances
+    )
+  end
+
+  # Validates recipe completeness (internal method)
+  #
+  # @param response [Hash] LLM response with recipe data
+  # @return [ValidationResult] Validation result
+  def validate_recipe_completeness_internal(response)
+    # Validate recipe completeness (missing fields, ingredient-instruction consistency, shopping list)
+    Tools::RecipeCompletenessChecker.validate(recipe_data: response)
+  end
+
+  # Validates preference compliance (internal method)
+  #
+  # @param response [Hash] LLM response with recipe data
+  # @return [ValidationResult] Validation result
+  def validate_preference_compliance_internal(response)
+    # Validate recipe compliance with user preferences
+    Tools::PreferenceComplianceChecker.validate(
+      recipe_data: response,
+      user_preferences: current_user.preferences,
+      user_age: current_user.age,
+      user_weight: current_user.weight,
+      user_gender: current_user.gender
     )
   end
 
