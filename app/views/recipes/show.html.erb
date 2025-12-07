@@ -19,10 +19,10 @@
 <% end %>
 
 <% left_content = capture do %>
-  <%# Recipe Header - Sticky, doesn't scroll %>
+  <%# Recipe Header - Sticky, doesn't scroll (only title and buttons) %>
   <div id="recipe-header" class="flex-shrink-0 border-bottom bg-white" style="position: sticky; top: 0; z-index: 10;">
     <div class="p-2">
-      <div class="d-flex align-items-center gap-2 mb-2">
+      <div class="d-flex align-items-center gap-2">
         <h2 class="mb-0"><%= @recipe.title || "Untitled" %></h2>
 
         <span id="favorite-toggle-<%= @recipe.id %>">
@@ -45,10 +45,10 @@
     </div>
   </div>
   
-  <%# Recipe Content - Scrollable %>
-  <div id="recipe-details" class="overflow-y-auto flex-grow-1" style="min-height: 0;">
+  <%# Recipe Content - Scrollable (includes description) %>
+  <div id="recipe-details" class="overflow-y-auto flex-grow-1 p-2" style="min-height: 0;">
     <% if @recipe.description.present? && @recipe.description != "Nothing here yet..." %>
-      <p class="text-muted lead mb-0"><%= @recipe.description %></p>
+      <p class="text-muted lead mb-3"><%= @recipe.description %></p>
     <% end %>
     <%= render "recipes/details", recipe: @recipe, skip_header: true %>
   </div>

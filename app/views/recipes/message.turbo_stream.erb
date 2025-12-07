@@ -19,11 +19,11 @@
 <%# Update recipe details section ONLY if recipe actually changed %>
 <%# For questions, the recipe stays the same so we don't need to update the view %>
 <% if @recipe_changed %>
-  <%# Update recipe header (title, description) %>
+  <%# Update recipe header (title and buttons only - description goes in scrollable area) %>
   <%= turbo_stream.replace "recipe-header" do %>
     <div id="recipe-header" class="flex-shrink-0 border-bottom bg-white" style="position: sticky; top: 0; z-index: 10;">
       <div class="p-2">
-        <div class="d-flex align-items-center gap-2 mb-2">
+        <div class="d-flex align-items-center gap-2">
           <h2 class="mb-0"><%= @recipe.title || "Untitled" %></h2>
 
           <span id="favorite-toggle-<%= @recipe.id %>">
@@ -43,16 +43,18 @@
             <i class="bi bi-trash fs-3 text-dark"></i>
           <% end %>
         </div>
-        <% if @recipe.description.present? && @recipe.description != "Nothing here yet..." %>
-          <p class="text-muted lead mb-0"><%= @recipe.description %></p>
-        <% end %>
       </div>
     </div>
   <% end %>
   
-  <%# Update recipe content (scrollable area) %>
+  <%# Update recipe content (scrollable area - includes description) %>
   <%= turbo_stream.replace "recipe-details" do %>
-    <%= render "recipes/details", recipe: @recipe, image_regenerating: @image_regenerating, skip_header: true %>
+    <div id="recipe-details" class="overflow-y-auto flex-grow-1 p-2" style="min-height: 0;">
+      <% if @recipe.description.present? && @recipe.description != "Nothing here yet..." %>
+        <p class="text-muted lead mb-3"><%= @recipe.description %></p>
+      <% end %>
+      <%= render "recipes/details", recipe: @recipe, image_regenerating: @image_regenerating, skip_header: true %>
+    </div>
   <% end %>
 <% end %>
 
