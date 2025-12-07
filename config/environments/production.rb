@@ -52,12 +52,21 @@ Rails.application.configure do
   config.force_ssl = true
 
   # Log to STDOUT by default
+  # Use a custom formatter that omits timestamps (Heroku already provides them)
+  # and removes process ID for cleaner, more readable logs
   config.logger = ActiveSupport::Logger.new(STDOUT)
-    .tap  { |logger| logger.formatter = ::Logger::Formatter.new }
+    .tap do |logger|
+      logger.formatter = proc do |severity, _time, _progname, msg|
+        # Format: "INFO -- : message" (no timestamp, no process ID)
+        # Heroku already provides timestamps, so we don't need them here
+        "#{severity} -- : #{msg}\n"
+      end
+    end
     .then { |logger| ActiveSupport::TaggedLogging.new(logger) }
 
-  # Prepend all log lines with the following tags.
-  config.log_tags = [ :request_id ]
+  # Don't prepend request_id to log lines - it's not needed and clutters the logs
+  # Heroku router logs already include request IDs when needed
+  config.log_tags = []
 
   # "info" includes generic and useful information about system operation, but avoids logging too much
   # information to avoid inadvertent exposure of personally identifiable information (PII). If you
