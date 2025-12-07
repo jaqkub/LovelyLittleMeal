@@ -86,3 +86,6 @@ gem "faraday", "~> 2.0"
 
 # Image generation for stub strategy
 gem "chunky_png", "~> 1.4"
+
+# Async execution for parallel validation
+gem "async", "~> 2.0"
