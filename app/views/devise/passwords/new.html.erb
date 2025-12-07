@@ -1,5 +1,5 @@
 <div class="container d-flex justify-content-center align-items-center" style="min-height: 100dvh;">
-  <div class="auth-card p-2 shadow-sm bg-white rounded" style="max-width: 400px; width: 100%;">
+  <div class="auth-card p-2 shadow-sm bg-white" style="max-width: 400px; width: 100%; border-radius: 12px;">
 
     <h2 class="mb-4 text-center">Forgot your password?</h2>
 
@@ -14,13 +14,18 @@
         <%= f.input :email,
                     required: true,
                     autofocus: true,
-                    input_html: { autocomplete: "email" } %>
+                    input_html: { 
+                      autocomplete: "email",
+                      class: "form-control",
+                      style: "border-radius: 12px; height: 38px;"
+                    } %>
       </div>
 
       <div class="form-actions mb-3">
         <%= f.button :submit,
                      "Send reset instructions",
-                     class: "btn btn-dark w-100" %>
+                     class: "btn btn-primary w-100",
+                     style: "border-radius: 12px; height: 38px;" %>
       </div>
 
     <% end %>

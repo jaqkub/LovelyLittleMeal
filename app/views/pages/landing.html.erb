@@ -1,0 +1,26 @@
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 100dvh;">
+  <div class="text-center" style="max-width: 800px; padding: 2rem;">
+    <%# Description %>
+    <p class="lead mb-4 text-muted">
+      Create personalized recipes tailored to your needs and abilities.
+    </p>
+
+    <p class="mb-5 text-muted">
+      Craft delicious recipes together with our assistant.
+    </p>
+
+    <%# Action Buttons %>
+    <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center">
+      <%= link_to "Sign In", new_user_session_path,
+          class: "btn btn-primary btn-lg",
+          style: "padding: 0.75rem 2rem; font-size: 1.1rem; border-radius: 12px;",
+          data: { turbo_prefetch: false } %>
+      
+      <%= link_to "Create Account", new_user_registration_path,
+          class: "btn btn-primary btn-lg",
+          style: "padding: 0.75rem 2rem; font-size: 1.1rem; border-radius: 12px;",
+          data: { turbo_prefetch: false } %>
+    </div>
+  </div>
+</div>
+

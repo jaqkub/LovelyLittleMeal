@@ -228,7 +228,7 @@ module Tools
       item_lower = item.downcase
       has_processed = PROCESSED_INDICATORS.any? { |indicator| item_lower.include?(indicator) }
       
-        if has_processed
+      if has_processed
         # Extract amount and unit first (if present) - include all possible units
         # Handles: "1", "1.5", "1/2", "3/4", etc.
         amount_match = item.match(/^(\d+(?:\/\d+)?(?:\.\d+)?|\d+\/\d+)\s*(g|ml|pieces?|heads?|bulbs?|loaves?|rolls?|teaspoons?|tsp|tablespoons?|tbsp|cloves?|slices?|leaves?)\s+(.+)/i)

@@ -20,6 +20,10 @@ class Users::SessionsController < Devise::SessionsController
 
   # The path used after sign in.
   def after_sign_in_path_for(resource)
+    # First, check if there's a stored location (where user was trying to go)
+    stored_location = stored_location_for(resource)
+    return stored_location if stored_location.present?
+    
     # Check if user needs to complete wizard
     if resource.activity_level.nil? || resource.goal.nil? || 
        (resource.appliances.blank? || (resource.appliances.is_a?(Hash) && !resource.appliances.values.any?))

@@ -1,32 +1,32 @@
 <div id="recipe-details" class="<%= 'has-content' if recipe.content.present? && recipe.content.is_a?(Hash) && recipe.content.any? %>">
   <%# Recipe Header - Only render if not skipped (for show page, header is in show.html.erb) %>
   <% unless local_assigns[:skip_header] %>
-    <div class="mb-4">
-      <div class="d-flex align-items-center gap-2 mb-2">
-        <h2 class="mb-0"><%= recipe.title || "Untitled" %></h2>
+  <div class="mb-4">
+    <div class="d-flex align-items-center gap-2 mb-2">
+      <h2 class="mb-0"><%= recipe.title || "Untitled" %></h2>
 
-        <span id="favorite-toggle-<%= recipe.id %>">
-          <%= button_to toggle_favorite_recipe_path(recipe),
-                        method: :patch,
-                        class: "btn p-0 border-0 bg-transparent favorite-button",
-                        form_class: "d-inline" do %>
-            <i class="bi <%= recipe.favorite? ? 'bi-star-fill text-warning' : 'bi-star' %> fs-3"></i>
-          <% end %>
-        </span>
+  <span id="favorite-toggle-<%= recipe.id %>">
+    <%= button_to toggle_favorite_recipe_path(recipe),
+                  method: :patch,
+                  class: "btn p-0 border-0 bg-transparent favorite-button",
+                  form_class: "d-inline" do %>
+      <i class="bi <%= recipe.favorite? ? 'bi-star-fill text-warning' : 'bi-star' %> fs-3"></i>
+    <% end %>
+  </span>
 
-        <%= button_to recipe_path(recipe),
-                      method: :delete,
-                      data: { turbo_confirm: "Delete this recipe?" },
-                      class: "btn p-0 border-0 bg-transparent icon-button",
-                      form_class: "d-inline" do %>
-          <i class="bi bi-trash fs-3 text-dark"></i>
-        <% end %>
+  <%= button_to recipe_path(recipe),
+                method: :delete,
+                data: { turbo_confirm: "Delete this recipe?" },
+                class: "btn p-0 border-0 bg-transparent icon-button",
+                form_class: "d-inline" do %>
+    <i class="bi bi-trash fs-3 text-dark"></i>
+  <% end %>
 
-      </div>
-      <% if recipe.description.present? && recipe.description != "Nothing here yet..." %>
-        <p class="text-muted lead mb-0"><%= recipe.description %></p>
-      <% end %>
     </div>
+    <% if recipe.description.present? && recipe.description != "Nothing here yet..." %>
+      <p class="text-muted lead mb-0"><%= recipe.description %></p>
+    <% end %>
+  </div>
   <% end %>
   <%# Recipe Image %>
   <%= render "recipes/image", recipe: recipe, image_regenerating: local_assigns[:image_regenerating] || false %>

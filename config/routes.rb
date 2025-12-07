@@ -1,6 +1,11 @@
 Rails.application.routes.draw do
   devise_for :users, controllers: { registrations: "users/registrations" }
-  root to: "recipes#index"
+  
+  # Landing page (accessible without authentication)
+  get "/landing", to: "pages#landing", as: :landing
+  
+  # Root route - redirects to landing if not authenticated, recipes if authenticated
+  root to: "pages#landing"
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.

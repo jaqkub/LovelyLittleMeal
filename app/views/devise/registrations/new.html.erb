@@ -1,5 +1,5 @@
 <div class="container d-flex justify-content-center align-items-center" style="min-height: 100dvh;">
-  <div class="auth-card p-2 shadow-sm bg-white rounded" style="max-width: 400px; width: 100%;">
+  <div class="auth-card p-2 shadow-sm bg-white" style="max-width: 400px; width: 100%; border-radius: 12px;">
     <h2 class="mb-4 text-center">Sign up</h2>
 
     <%= simple_form_for(resource, as: resource_name, url: registration_path(resource_name)) do |f| %>
@@ -9,20 +9,32 @@
         <%= f.input :email,
                     required: true,
                     autofocus: true,
-                    input_html: { autocomplete: "email" } %>
+                    input_html: { 
+                      autocomplete: "email",
+                      class: "form-control",
+                      style: "border-radius: 12px; height: 38px;"
+                    } %>
 
         <%= f.input :password,
                     required: true,
                     hint: ("#{@minimum_password_length} characters minimum" if @minimum_password_length),
-                    input_html: { autocomplete: "new-password" } %>
+                    input_html: { 
+                      autocomplete: "new-password",
+                      class: "form-control",
+                      style: "border-radius: 12px; height: 38px;"
+                    } %>
 
         <%= f.input :password_confirmation,
                     required: true,
-                    input_html: { autocomplete: "new-password" } %>
+                    input_html: { 
+                      autocomplete: "new-password",
+                      class: "form-control",
+                      style: "border-radius: 12px; height: 38px;"
+                    } %>
       </div>
 
       <div class="form-actions">
-        <%= f.button :submit, "Sign up", class: "btn btn-dark w-100" %>
+        <%= f.button :submit, "Sign up", class: "btn btn-primary w-100", style: "border-radius: 12px; height: 38px;" %>
       </div>
     <% end %>
 

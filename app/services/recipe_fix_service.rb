@@ -110,7 +110,7 @@ class RecipeFixService
   def self.apply_programmatic_fixes(recipe_data:, violations:, user_message:, current_user:)
     fixed_data = recipe_data.deep_dup
     instructions = fixed_data.dig("content", "instructions") || []
-    
+
     # Get user allergies for warning text
     user_allergies = if current_user.allergies.is_a?(Hash)
                        current_user.active_allergies
@@ -166,58 +166,58 @@ class RecipeFixService
 
     # Fix allergen warning violations (only if we have instructions)
     if allergen_violations.any? && instructions.any?
-      # Group violations by step number
+    # Group violations by step number
       violations_by_step = allergen_violations.group_by do |violation|
-        step_match = violation[:message].match(/step (\d+)/i)
-        step_match ? step_match[1].to_i - 1 : nil # Convert to 0-based index
-      end
+      step_match = violation[:message].match(/step (\d+)/i)
+      step_match ? step_match[1].to_i - 1 : nil # Convert to 0-based index
+    end
 
-      # Fix each step
-      violations_by_step.each do |step_index, step_violations|
-        next unless step_index && step_index >= 0 && step_index < instructions.length
+    # Fix each step
+    violations_by_step.each do |step_index, step_violations|
+      next unless step_index && step_index >= 0 && step_index < instructions.length
 
-        instruction = instructions[step_index].dup
-        original_instruction = instruction.dup
+      instruction = instructions[step_index].dup
+      original_instruction = instruction.dup
 
-        step_violations.each do |violation|
-          case violation[:type]
-          when :missing_emoji
-            # Prepend warning to instruction step
-            # Only add if not already present
-            unless instruction.include?("⚠️") && instruction.include?("WARNING:")
-              warning_text = "⚠️ WARNING: This step contains #{allergen_name} which you are allergic to. Proceed with extreme caution. "
-              instruction = warning_text + instruction
-              Rails.logger.info("RecipeFixService: Programmatically added warning to step #{step_index + 1}")
-            end
+      step_violations.each do |violation|
+        case violation[:type]
+        when :missing_emoji
+          # Prepend warning to instruction step
+          # Only add if not already present
+          unless instruction.include?("⚠️") && instruction.include?("WARNING:")
+            warning_text = "⚠️ WARNING: This step contains #{allergen_name} which you are allergic to. Proceed with extreme caution. "
+            instruction = warning_text + instruction
+            Rails.logger.info("RecipeFixService: Programmatically added warning to step #{step_index + 1}")
+          end
 
-          when :incorrect_warning_format
-            # Fix capitalization of WARNING
-            instruction = instruction.gsub(/⚠️\s*(warning|Warning):/i, "⚠️ WARNING:")
-            if instruction != original_instruction
-              Rails.logger.info("RecipeFixService: Programmatically fixed WARNING format in step #{step_index + 1}")
-            end
+        when :incorrect_warning_format
+          # Fix capitalization of WARNING
+          instruction = instruction.gsub(/⚠️\s*(warning|Warning):/i, "⚠️ WARNING:")
+          if instruction != original_instruction
+            Rails.logger.info("RecipeFixService: Programmatically fixed WARNING format in step #{step_index + 1}")
+          end
 
-          when :generic_warning
-            # Update warning to include specific allergen name
-            if instruction.include?("⚠️") && instruction.include?("WARNING:")
-              # Replace generic warning text with specific allergen
-              # Pattern: "⚠️ WARNING: [generic text]. [rest of instruction]"
-              # Replace with: "⚠️ WARNING: This step contains [allergen] which you are allergic to. Proceed with extreme caution. [rest]"
-              instruction = instruction.sub(
-                /(⚠️\s*WARNING:\s*)[^.]*(\.\s*)/i,
-                "\\1This step contains #{allergen_name} which you are allergic to. Proceed with extreme caution. "
-              )
-              Rails.logger.info("RecipeFixService: Programmatically updated warning to include specific allergen in step #{step_index + 1}")
-            end
+        when :generic_warning
+          # Update warning to include specific allergen name
+          if instruction.include?("⚠️") && instruction.include?("WARNING:")
+            # Replace generic warning text with specific allergen
+            # Pattern: "⚠️ WARNING: [generic text]. [rest of instruction]"
+            # Replace with: "⚠️ WARNING: This step contains [allergen] which you are allergic to. Proceed with extreme caution. [rest]"
+            instruction = instruction.sub(
+              /(⚠️\s*WARNING:\s*)[^.]*(\.\s*)/i,
+              "\\1This step contains #{allergen_name} which you are allergic to. Proceed with extreme caution. "
+            )
+            Rails.logger.info("RecipeFixService: Programmatically updated warning to include specific allergen in step #{step_index + 1}")
           end
         end
-
-        instructions[step_index] = instruction
       end
 
-      # Update recipe data with fixed instructions
-      fixed_data["content"] ||= {}
-      fixed_data["content"]["instructions"] = instructions
+      instructions[step_index] = instruction
+    end
+
+    # Update recipe data with fixed instructions
+    fixed_data["content"] ||= {}
+    fixed_data["content"]["instructions"] = instructions
     end
 
     fixed_data
