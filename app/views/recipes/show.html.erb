@@ -15,7 +15,8 @@
   <% content_for :og_image, absolute_url_for(@recipe.image) %>
 <% else %>
   <%# Fallback to LLM OG logo if no recipe image %>
-  <% content_for :og_image, public_file_url('llm-og-logo.svg') %>
+  <%# Uses PNG for social media crawlers (WhatsApp, Facebook, etc.), SVG for regular browsers %>
+  <% content_for :og_image, og_logo_url %>
 <% end %>
 
 <% left_content = capture do %>
