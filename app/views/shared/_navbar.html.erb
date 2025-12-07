@@ -4,8 +4,16 @@
     <!-- Just to push nav items and hamburger button to the right -->
     <div class="navbar-brand"></div>
 
-    <!-- Hamburger (mobile only) - hidden during wizard -->
-    <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNav" style="<%= 'visibility: hidden; pointer-events: none;' if controller_name == 'wizard' %>">
+    <!-- Hamburger (mobile only) - hidden during wizard, landing page, and Devise auth pages -->
+    <%# Hide burger on: wizard, landing page, and all Devise authentication pages %>
+    <% hide_burger = controller_name == 'wizard' || 
+                     (controller_name == 'pages' && action_name == 'landing') ||
+                     request.path.start_with?('/users/sign_in') ||
+                     request.path.start_with?('/users/sign_up') ||
+                     request.path.start_with?('/users/password') ||
+                     request.path.start_with?('/users/confirmation') ||
+                     request.path.start_with?('/users/unlock') %>
+    <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNav" style="<%= 'visibility: hidden; pointer-events: none;' if hide_burger %>">
       <span class="navbar-toggler-icon"></span>
     </button>
 
